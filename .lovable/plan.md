@@ -66,7 +66,7 @@ Sidebar já preparada com os itens futuros (Evolução, Check-ins, Metas, Gamifi
 
 
 ## Dados iniciais
-Os três treinos de exemplo (Segunda, Quarta, Sexta) e os exercícios citados são criados como templates reais no banco, junto com os níveis (START → UNSTOPPABLE) e badges iniciais — dados reais, não simulados.
+Os três treinos de exemplo (Glúteo+Quadríceps, Superiores+Abdômen, Glúteo+Posterior) entram como **treinos do menu ativo** — sem amarração a dias da semana — junto com os exercícios citados, os níveis (START → UNSTOPPABLE) e badges iniciais; dados reais no banco, não simulados.
 
 ## Fora desta entrega (fases seguintes)
 Avaliação corporal e gráficos completos, fotos de evolução com comparação, check-ins semanais, metas, mensagens, notificações, Journey, relatório mensal e STRNG Score.
