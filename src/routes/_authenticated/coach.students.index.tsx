@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ChevronRight } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/coach/students")({
+export const Route = createFileRoute("/_authenticated/coach/students/")({
   head: () => ({
     meta: [
       { title: "Alunos — STAY STRNG" },
