@@ -47,13 +47,15 @@ Regras de acesso:
 ## Gamificação desacoplada do dia
 - Streak conta **semanas em que a meta de treinos foi atingida**, não dias consecutivos.
 - Pontos por treino concluído, semana completa e PRs; trocar a ordem ou o dia dos treinos nunca penaliza.
-- Níveis, XP e PRs exibidos em Dourado Tecnológico.
+- **Bônus de Disciplina**: ao finalizar, o sistema compara a sequência de execução registrada com a ordem prescrita no treino; se coincidir exatamente em todos os exercícios, concede pontos extras.
+- **Bônus de foto**: +50 STRNG Points quando o aluno envia a foto pós-treino (opcional).
+- Níveis, XP, PRs e bônus exibidos em Dourado Tecnológico.
 
 ## Telas do aluno
 1. **Login / cadastro / recuperação de senha** com a marca.
 2. **Home**: "Olá, [nome]" + "WHAT'S YOUR NEXT WIN?", progresso da semana (ex.: 2/4 treinos), menu dos treinos ativos com botão COMEÇAR TREINO em cada card, streak semanal, STRNG Level com barra de XP, STRNG Points e resumo da semana.
-3. **Execução do treino em tela cheia**: modo foco sem navegação, um exercício por vez com mídia, instruções, prescrição (séries × reps, carga, cadência, descanso), registro de cada série (carga, reps, RPE opcional) e cronômetro de descanso grande com iniciar/pausar/pular.
-4. **Workout Complete**: resumo (exercícios, séries, volume, tempo), foto pós-treino obrigatória, e atualização de pontos, streak e nível.
+3. **Execução do treino em tela cheia**: modo foco sem navegação, um exercício por vez com mídia, instruções, prescrição (séries × reps, carga, cadência, descanso), registro de cada série (carga, reps, RPE opcional) e cronômetro de descanso grande com iniciar/pausar/pular. O aluno pode pular para outro exercício; a ordem real é registrada.
+4. **Workout Complete**: resumo (exercícios, séries, volume, tempo) e pontos ganhos. A **foto pós-treino é opcional** — o botão CONCLUIR encerra a sessão em um clique, e o envio da foto aparece como ação incentivada ("+50 pontos"), sem bloquear nada. Quando o Bônus de Disciplina é conquistado, um selo dourado destacado ("ORDEM PERFEITA +X pts") aparece no resumo.
 5. **Histórico / Calendário**: calendário marcando os dias efetivamente treinados, lista de sessões e evolução por exercício.
 
 ## Telas do treinador
