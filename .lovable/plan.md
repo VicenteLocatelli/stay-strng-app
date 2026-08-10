@@ -75,4 +75,5 @@ Avaliação corporal e gráficos completos, fotos de evolução com comparação
 - TanStack Start com rotas separadas: `/`, `/auth`, `/app/*` (aluno) e `/coach/*` (treinador), redirecionamento pós-login conforme o papel.
 - Papéis em tabela dedicada com função `security definer` para evitar escalonamento de privilégio.
 - Leituras via server functions autenticadas; upload de fotos direto ao storage privado.
-- Gráficos com Recharts, adaptados para telas pequenas.
+- Gráficos com Recharts em tons de laranja/dourado sobre fundo escuro, adaptados para telas pequenas.
+- Tokens de cor definidos em `src/styles.css` (@theme) a partir da paleta acima; nenhum azul/verde no design system.
