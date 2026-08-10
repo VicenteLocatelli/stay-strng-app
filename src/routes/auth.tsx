@@ -35,18 +35,24 @@ function AuthPage() {
     navigate({ to: data?.[0]?.role === "trainer" ? "/coach" : "/app" });
   }
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent): Promise<void> {
     e.preventDefault();
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     if (data.user) await routeByRole(data.user.id);
   }
 
-  async function handleSignup(e: React.FormEvent) {
+  async function handleSignup(e: React.FormEvent): Promise<void> {
     e.preventDefault();
-    if (!fullName.trim()) return toast.error("Informe seu nome completo.");
+    if (!fullName.trim()) {
+      toast.error("Informe seu nome completo.");
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -57,7 +63,10 @@ function AuthPage() {
       },
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     if (data.session && data.user) {
       toast.success("Conta criada. Bem-vindo à STAY STRNG!");
       await routeByRole(data.user.id);
@@ -66,11 +75,14 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
+  async function handleGoogle(): Promise<void> {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
-    if (result.error) return toast.error("Não foi possível entrar com o Google.");
+    if (result.error) {
+      toast.error("Não foi possível entrar com o Google.");
+      return;
+    }
     if (result.redirected) return;
     const { data } = await supabase.auth.getUser();
     if (data.user) await routeByRole(data.user.id);
