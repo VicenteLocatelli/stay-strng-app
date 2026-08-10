@@ -1,0 +1,49 @@
+import { createFileRoute, Link, Outlet, useLocation, redirect } from "@tanstack/react-router";
+import { Dumbbell, History, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+export const Route = createFileRoute("/_authenticated/app")({
+  beforeLoad: async ({ context }) => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", (context as { user: { id: string } }).user.id);
+    if (data?.[0]?.role === "trainer") throw redirect({ to: "/coach" });
+  },
+  component: StudentLayout,
+});
+
+const NAV = [
+  { to: "/app", label: "Treinar", icon: Dumbbell },
+  { to: "/app/history", label: "Histórico", icon: History },
+  { to: "/app/profile", label: "Perfil", icon: User },
+] as const;
+
+function StudentLayout() {
+  const { pathname } = useLocation();
+  return (
+    <div className="min-h-screen bg-background pb-24">
+      <Outlet />
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur">
+        <ul className="mx-auto flex max-w-lg">
+          {NAV.map(({ to, label, icon: Icon }) => {
+            const active = to === "/app" ? pathname === "/app" : pathname.startsWith(to);
+            return (
+              <li key={to} className="flex-1">
+                <Link
+                  to={to}
+                  className={`flex flex-col items-center gap-1 py-3 text-[11px] font-semibold tracking-wide transition ${
+                    active ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </div>
+  );
+}
