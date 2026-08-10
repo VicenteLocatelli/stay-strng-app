@@ -629,6 +629,7 @@ export type Database = {
         Args: { _student_id: string; _trainer_id: string }
         Returns: boolean
       }
+      link_student_by_email: { Args: { _email: string }; Returns: string }
     }
     Enums: {
       app_role: "trainer" | "student"
