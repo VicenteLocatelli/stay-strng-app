@@ -26,26 +26,35 @@ function CoachDashboard() {
     queryFn: async () => {
       const { data: links } = await supabase
         .from("trainer_students")
-        .select("student_id, profiles:student_id(id,full_name,weekly_target)")
+        .select("student_id")
         .eq("trainer_id", me!.userId)
         .eq("active", true);
 
       const ids = (links ?? []).map((l) => l.student_id);
-      const { data: sessions } = ids.length
-        ? await supabase
-            .from("workout_sessions")
-            .select("id,student_id,workout_name,completed_at")
-            .in("student_id", ids)
-            .eq("status", "completed")
-            .order("completed_at", { ascending: false })
-        : { data: [] };
+      const [profilesRes, sessionsRes] = await Promise.all([
+        ids.length
+          ? supabase.from("profiles").select("id,full_name,weekly_target").in("id", ids)
+          : Promise.resolve({ data: [] as { id: string; full_name: string; weekly_target: number }[] }),
+        ids.length
+          ? supabase
+              .from("workout_sessions")
+              .select("id,student_id,workout_name,completed_at")
+              .in("student_id", ids)
+              .eq("status", "completed")
+              .order("completed_at", { ascending: false })
+          : Promise.resolve({ data: [] as { id: string; student_id: string; workout_name: string; completed_at: string | null }[] }),
+      ]);
 
-      return { links: links ?? [], sessions: sessions ?? [] };
+      return {
+        links: links ?? [],
+        profiles: profilesRes.data ?? [],
+        sessions: sessionsRes.data ?? [],
+      };
     },
   });
 
   const students = (data?.links ?? []).map((l) => {
-    const prof = l.profiles as { id: string; full_name: string; weekly_target: number } | null;
+    const prof = (data?.profiles ?? []).find((p) => p.id === l.student_id) ?? null;
     const mine = (data?.sessions ?? []).filter((s) => s.student_id === l.student_id);
     const week = mine.filter((s) => weekKey(new Date(s.completed_at!)) === weekKey(new Date())).length;
     const last = mine[0]?.completed_at ?? null;
