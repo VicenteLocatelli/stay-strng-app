@@ -24,11 +24,13 @@ Tabelas desta fase:
 - `trainer_students` (vínculo treinador ↔ aluno)
 - `exercises` (nome, categoria, grupo muscular, equipamento, vídeo, imagem, descrição, execução, erros comuns, ativo)
 - `workout_templates` + `template_exercises` (biblioteca do treinador)
-- `student_workouts` + `workout_exercises` (cópia personalizada por aluno, com versão, dia da semana, objetivo, duração)
+- `student_workouts` + `workout_exercises` (cópia personalizada por aluno, com versão, objetivo, duração e status ativo — **sem dia da semana fixo**)
+- `weekly_targets` (meta de treinos por semana definida pelo treinador para cada aluno)
 - `workout_sessions` (data, início, fim, volume, duração, status)
 - `exercise_logs` / `workout_sets` (série, carga, repetições, RPE, observação — nunca sobrescritos)
 - `workout_completion_photos` (foto vinculada à sessão, privada)
-- Gamificação base: `points_transactions`, `levels`, `achievements`, `student_achievements`, `streaks`
+- Gamificação base: `points_transactions`, `levels`, `achievements`, `student_achievements`, `streaks` (por semana, não por dia)
+
 
 Regras de acesso:
 - Aluno lê/escreve apenas as próprias linhas.
