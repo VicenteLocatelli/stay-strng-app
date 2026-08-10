@@ -3,12 +3,17 @@
 ## Objetivo desta entrega
 Fundação sólida e 100% funcional (sem dados fictícios): autenticação com papéis, dashboards de aluno e treinador, biblioteca de exercícios, criação e atribuição de treinos, execução do treino com registro de séries, descanso, foto pós-treino, histórico e base de gamificação.
 
-## Identidade visual
-- Tema escuro premium, alto contraste, um único acento vibrante (verde-limão elétrico) sobre grafite/preto.
+## Identidade visual (obrigatória)
+- Dark mode profundo: fundo `#0B0C10`, superfícies e cards `#1A1D24`.
+- Texto primário branco puro `#FFFFFF`; hierarquia secundária em cinza metálico `#8C929D`.
+- CTA e energia em Laranja Industrial `#FF5500` (botões principais, progresso de treino).
+- Gamificação, níveis, badges e PRs em Dourado Tecnológico `#D4AF37`.
+- Proibido azul corporativo e verde saúde em qualquer elemento da interface.
 - Tipografia condensada e forte para títulos (estilo atlético), sans neutra para textos.
-- Cards de cantos suaves, sem gradientes exagerados, muito espaço em branco escuro, gráficos limpos.
-- Assinatura "DON'T CHASE PERFECTION. STAY STRNG." presente em login, home do aluno e rodapé.
+- Sem gradientes exagerados; contraste alto, muito espaço negativo, gráficos limpos.
+- Assinatura "DON'T CHASE PERFECTION. STAY STRNG." em login, home do aluno e rodapé.
 - Mobile-first para o aluno (barra de navegação inferior, botões grandes); painel do treinador com sidebar responsiva.
+
 
 ## Backend (Lovable Cloud)
 Ativar Cloud e criar o esquema relacional com segurança por linha desde o início.
