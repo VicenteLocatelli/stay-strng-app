@@ -38,20 +38,32 @@ Regras de acesso:
 - Fotos em bucket privado, acessadas por URL assinada.
 - Histórico é somente inserção; alterações de treino criam nova versão.
 
+## Modelo de treinos livres (sem dias fixos)
+- O treinador publica um **menu de treinos ativos** para a semana do aluno; não há agendamento por dia.
+- O aluno escolhe livremente qual treino executar em qualquer dia, na ordem que quiser, quantas vezes for necessário.
+- A meta semanal (ex.: 4 treinos/semana) é definida pelo treinador e usada para progresso, aderência e streak.
+- O calendário do aluno é **registro visual do passado**: destaca em laranja os dias com sessões concluídas, sem cobrar dias planejados.
+
+## Gamificação desacoplada do dia
+- Streak conta **semanas em que a meta de treinos foi atingida**, não dias consecutivos.
+- Pontos por treino concluído, semana completa e PRs; trocar a ordem ou o dia dos treinos nunca penaliza.
+- Níveis, XP e PRs exibidos em Dourado Tecnológico.
+
 ## Telas do aluno
 1. **Login / cadastro / recuperação de senha** com a marca.
-2. **Home**: "Olá, [nome]" + "WHAT'S YOUR NEXT WIN?", card do treino de hoje com botão COMEÇAR TREINO (ou "Hoje é dia de recuperação" + próximo treino), streak, STRNG Level com barra de XP, STRNG Points, aderência e resumo da semana.
-3. **Execução do treino**: um exercício por vez com mídia, instruções, prescrição (séries × reps, carga, cadência, descanso), registro de cada série (carga, reps, RPE opcional) e cronômetro de descanso com iniciar/pausar/pular.
+2. **Home**: "Olá, [nome]" + "WHAT'S YOUR NEXT WIN?", progresso da semana (ex.: 2/4 treinos), menu dos treinos ativos com botão COMEÇAR TREINO em cada card, streak semanal, STRNG Level com barra de XP, STRNG Points e resumo da semana.
+3. **Execução do treino em tela cheia**: modo foco sem navegação, um exercício por vez com mídia, instruções, prescrição (séries × reps, carga, cadência, descanso), registro de cada série (carga, reps, RPE opcional) e cronômetro de descanso grande com iniciar/pausar/pular.
 4. **Workout Complete**: resumo (exercícios, séries, volume, tempo), foto pós-treino obrigatória, e atualização de pontos, streak e nível.
-5. **Histórico**: sessões anteriores e evolução por exercício.
+5. **Histórico / Calendário**: calendário marcando os dias efetivamente treinados, lista de sessões e evolução por exercício.
 
 ## Telas do treinador
-1. **Dashboard**: alunos ativos, treinos realizados, aderência média, alunos em risco, e lista "Alunos que precisam de atenção".
-2. **Alunos**: lista com busca e filtros, criação/edição de aluno, perfil do aluno com visão geral, treinos e performance.
+1. **Dashboard**: alunos ativos, treinos realizados, aderência média, check-ins pendentes e um bloco de destaque **ALUNOS EM RISCO** — cartões com borda/etiqueta laranja mostrando dias sem treinar, meta semanal não atingida ou check-in pendente, clicáveis direto para o perfil.
+2. **Alunos**: lista com busca e filtros, criação/edição de aluno, definição da meta semanal de treinos, perfil do aluno com visão geral, treinos e performance.
 3. **Exercícios**: biblioteca com busca e filtros por grupo muscular e equipamento; criar e editar.
-4. **Treinos**: criar template com exercícios ordenados (séries, reps, carga, cadência, descanso, técnica, observação), duplicar e atribuir a um aluno gerando cópia independente.
+4. **Treinos**: criar template com exercícios ordenados (séries, reps, carga, cadência, descanso, técnica, observação), duplicar e publicar no menu ativo do aluno gerando cópia independente.
 
 Sidebar já preparada com os itens futuros (Evolução, Check-ins, Metas, Gamificação, Mensagens) marcados como próximas fases.
+
 
 ## Dados iniciais
 Os três treinos de exemplo (Segunda, Quarta, Sexta) e os exercícios citados são criados como templates reais no banco, junto com os níveis (START → UNSTOPPABLE) e badges iniciais — dados reais, não simulados.
