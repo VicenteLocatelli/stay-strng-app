@@ -38,6 +38,57 @@ export type Database = {
         }
         Relationships: []
       }
+      body_measurements: {
+        Row: {
+          arm_cm: number | null
+          body_fat: number | null
+          chest_cm: number | null
+          created_at: string
+          created_by: string | null
+          hip_cm: number | null
+          id: string
+          measured_on: string
+          notes: string | null
+          student_id: string
+          thigh_cm: number | null
+          updated_at: string
+          waist_cm: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          arm_cm?: number | null
+          body_fat?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          created_by?: string | null
+          hip_cm?: number | null
+          id?: string
+          measured_on?: string
+          notes?: string | null
+          student_id: string
+          thigh_cm?: number | null
+          updated_at?: string
+          waist_cm?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          arm_cm?: number | null
+          body_fat?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          created_by?: string | null
+          hip_cm?: number | null
+          id?: string
+          measured_on?: string
+          notes?: string | null
+          student_id?: string
+          thigh_cm?: number | null
+          updated_at?: string
+          waist_cm?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       exercise_logs: {
         Row: {
           created_at: string
@@ -120,6 +171,7 @@ export type Database = {
           execution: string | null
           id: string
           image_url: string | null
+          is_cardio: boolean
           muscle_group: string | null
           name: string
           notes: string | null
@@ -136,6 +188,7 @@ export type Database = {
           execution?: string | null
           id?: string
           image_url?: string | null
+          is_cardio?: boolean
           muscle_group?: string | null
           name: string
           notes?: string | null
@@ -152,6 +205,7 @@ export type Database = {
           execution?: string | null
           id?: string
           image_url?: string | null
+          is_cardio?: boolean
           muscle_group?: string | null
           name?: string
           notes?: string | null
@@ -219,9 +273,14 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          feedback_interval_days: number
           full_name: string
           goal: string | null
           id: string
+          last_feedback_at: string | null
+          next_feedback_at: string | null
+          plan: string
+          plan_price: number
           started_at: string
           updated_at: string
           weekly_target: number
@@ -229,9 +288,14 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          feedback_interval_days?: number
           full_name?: string
           goal?: string | null
           id: string
+          last_feedback_at?: string | null
+          next_feedback_at?: string | null
+          plan?: string
+          plan_price?: number
           started_at?: string
           updated_at?: string
           weekly_target?: number
@@ -239,9 +303,14 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          feedback_interval_days?: number
           full_name?: string
           goal?: string | null
           id?: string
+          last_feedback_at?: string | null
+          next_feedback_at?: string | null
+          plan?: string
+          plan_price?: number
           started_at?: string
           updated_at?: string
           weekly_target?: number
@@ -276,6 +345,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      student_feedbacks: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          next_feedback_at: string | null
+          student_id: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          next_feedback_at?: string | null
+          student_id: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          next_feedback_at?: string | null
+          student_id?: string
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       student_workouts: {
         Row: {
@@ -528,9 +627,11 @@ export type Database = {
           followed_order: boolean
           id: string
           notes: string | null
+          photo_bonus_awarded: boolean
           points_awarded: number
           started_at: string
           status: string
+          student_feedback: string | null
           student_id: string
           student_workout_id: string | null
           total_sets: number
@@ -543,9 +644,11 @@ export type Database = {
           followed_order?: boolean
           id?: string
           notes?: string | null
+          photo_bonus_awarded?: boolean
           points_awarded?: number
           started_at?: string
           status?: string
+          student_feedback?: string | null
           student_id: string
           student_workout_id?: string | null
           total_sets?: number
@@ -558,9 +661,11 @@ export type Database = {
           followed_order?: boolean
           id?: string
           notes?: string | null
+          photo_bonus_awarded?: boolean
           points_awarded?: number
           started_at?: string
           status?: string
+          student_feedback?: string | null
           student_id?: string
           student_workout_id?: string | null
           total_sets?: number
