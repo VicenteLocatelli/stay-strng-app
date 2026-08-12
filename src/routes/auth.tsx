@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import { SLOGAN } from "@/lib/strng";
 
 export const Route = createFileRoute("/auth")({
@@ -22,13 +23,49 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+function PasswordInput({
+  id,
+  value,
+  onChange,
+  minLength,
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  minLength?: number;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        type={show ? "text" : "password"}
+        required
+        minLength={minLength}
+        className="pr-11"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        aria-label={show ? "Ocultar senha" : "Mostrar senha"}
+        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground transition hover:text-foreground"
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"student" | "trainer">("student");
+  const [forgot, setForgot] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   async function routeByRole(userId: string) {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
@@ -59,7 +96,7 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: fullName, role },
+        data: { full_name: fullName, role: "student" },
       },
     });
     setLoading(false);
@@ -73,6 +110,21 @@ function AuthPage() {
     } else {
       toast.success("Confira seu e-mail para confirmar a conta.");
     }
+  }
+
+  async function handleReset(e: React.FormEvent): Promise<void> {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Enviamos um link de recuperação para o seu e-mail.");
+    setForgot(false);
   }
 
   async function handleGoogle(): Promise<void> {
@@ -97,67 +149,113 @@ function AuthPage() {
         <h1 className="mt-6 text-3xl font-bold">Acesse sua consultoria</h1>
         <p className="mt-2 text-sm text-muted-foreground">{SLOGAN}</p>
 
-        <Tabs defaultValue="login" className="mt-8">
-          <TabsList className="grid w-full grid-cols-2 bg-card">
-            <TabsTrigger value="login">Entrar</TabsTrigger>
-            <TabsTrigger value="signup">Criar conta</TabsTrigger>
-          </TabsList>
+        {forgot ? (
+          <form
+            onSubmit={handleReset}
+            className="mt-8 space-y-4 rounded-lg border border-border bg-card p-5"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="reset-email">E-mail da conta</Label>
+              <Input
+                id="reset-email"
+                type="email"
+                required
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="strng-title h-12 w-full font-bold" disabled={loading}>
+              Enviar link de recuperação
+            </Button>
+            <button
+              type="button"
+              className="w-full text-xs text-muted-foreground underline"
+              onClick={() => setForgot(false)}
+            >
+              Voltar para o login
+            </button>
+          </form>
+        ) : (
+          <Tabs defaultValue="login" className="mt-8">
+            <TabsList className="grid w-full grid-cols-2 bg-card">
+              <TabsTrigger value="login">Entrar</TabsTrigger>
+              <TabsTrigger value="signup">Criar conta</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-4 rounded-lg border border-border bg-card p-5">
-              <div className="space-y-2">
-                <Label htmlFor="login-email">E-mail</Label>
-                <Input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="login-password">Senha</Label>
-                <Input id="login-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              <Button type="submit" className="strng-title h-12 w-full font-bold" disabled={loading}>
-                Entrar
-              </Button>
-            </form>
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <form onSubmit={handleSignup} className="space-y-4 rounded-lg border border-border bg-card p-5">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome completo</Label>
-                <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">E-mail</Label>
-                <Input id="signup-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-password">Senha</Label>
-                <Input id="signup-password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Perfil</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["student", "trainer"] as const).map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setRole(r)}
-                      className={`strng-title rounded-md border px-3 py-3 text-sm font-bold transition ${
-                        role === r
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground"
-                      }`}
-                    >
-                      {r === "student" ? "Aluno" : "Treinador"}
-                    </button>
-                  ))}
+            <TabsContent value="login">
+              <form
+                onSubmit={handleLogin}
+                className="space-y-4 rounded-lg border border-border bg-card p-5"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">E-mail</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
-              </div>
-              <Button type="submit" className="strng-title h-12 w-full font-bold" disabled={loading}>
-                Criar conta
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Senha</Label>
+                  <PasswordInput id="login-password" value={password} onChange={setPassword} />
+                </div>
+                <Button type="submit" className="strng-title h-12 w-full font-bold" disabled={loading}>
+                  Entrar
+                </Button>
+                <button
+                  type="button"
+                  className="w-full text-xs text-muted-foreground underline"
+                  onClick={() => {
+                    setResetEmail(email);
+                    setForgot(true);
+                  }}
+                >
+                  Esqueci minha senha
+                </button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup">
+              <form
+                onSubmit={handleSignup}
+                className="space-y-4 rounded-lg border border-border bg-card p-5"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome completo</Label>
+                  <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">E-mail</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Senha</Label>
+                  <PasswordInput
+                    id="signup-password"
+                    value={password}
+                    onChange={setPassword}
+                    minLength={6}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Ao criar sua conta você entra como aluno e é vinculado automaticamente ao seu
+                  treinador.
+                </p>
+                <Button type="submit" className="strng-title h-12 w-full font-bold" disabled={loading}>
+                  Criar conta
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        )}
 
         <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
           <span className="h-px flex-1 bg-border" /> OU <span className="h-px flex-1 bg-border" />
