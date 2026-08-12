@@ -22,6 +22,14 @@ export const Route = createFileRoute("/_authenticated/coach/workouts")({
   component: WorkoutsPage,
 });
 
+export type PrescriptionPatch = {
+  sets: number;
+  rep_range: string | null;
+  recommended_load: string | null;
+  cadence: string | null;
+  rest_seconds: number;
+};
+
 type TemplateExercise = {
   id: string;
   exercise_id: string;
@@ -353,7 +361,7 @@ function TemplateEditor({
     onChanged();
   }
 
-  async function update(id: string, patch: Record<string, unknown>) {
+  async function update(id: string, patch: PrescriptionPatch) {
     const { error } = await supabase.from("template_exercises").update(patch).eq("id", id);
     if (error) toast.error(error.message);
     else onChanged();
@@ -414,7 +422,7 @@ export function PrescriptionRow({
     rest_seconds: number;
   };
   name: string;
-  onSave: (patch: Record<string, unknown>) => void;
+  onSave: (patch: PrescriptionPatch) => void;
   onRemove: () => void;
 }) {
   const [form, setForm] = useState({
