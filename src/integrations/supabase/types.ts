@@ -735,6 +735,7 @@ export type Database = {
         Returns: boolean
       }
       link_student_by_email: { Args: { _email: string }; Returns: string }
+      main_trainer_email: { Args: never; Returns: string }
       my_student_emails: {
         Args: never
         Returns: {
