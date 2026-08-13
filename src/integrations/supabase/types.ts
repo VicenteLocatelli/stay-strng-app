@@ -92,10 +92,12 @@ export type Database = {
       exercise_logs: {
         Row: {
           created_at: string
+          duration_seconds: number | null
           execution_order: number
           exercise_id: string | null
           exercise_name: string
           id: string
+          intensity: string | null
           notes: string | null
           reps: number | null
           rpe: number | null
@@ -107,10 +109,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          duration_seconds?: number | null
           execution_order?: number
           exercise_id?: string | null
           exercise_name: string
           id?: string
+          intensity?: string | null
           notes?: string | null
           reps?: number | null
           rpe?: number | null
@@ -122,10 +126,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          duration_seconds?: number | null
           execution_order?: number
           exercise_id?: string | null
           exercise_name?: string
           id?: string
+          intensity?: string | null
           notes?: string | null
           reps?: number | null
           rpe?: number | null
