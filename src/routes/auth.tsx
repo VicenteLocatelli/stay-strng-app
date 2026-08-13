@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
-import { SLOGAN } from "@/lib/strng";
+import { SLOGAN, resolveRole } from "@/lib/strng";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
