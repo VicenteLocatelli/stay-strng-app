@@ -5,11 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/coach")({
   beforeLoad: async ({ context }) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", (context as { user: { id: string } }).user.id);
-    if (data?.[0]?.role !== "trainer") throw redirect({ to: "/app" });
+    const user = (context as { user: { id: string; email?: string } }).user;
+    const role = await resolveRole(user.id, user.email);
+    if (role !== "trainer") throw redirect({ to: "/app" });
   },
   component: CoachLayout,
 });
