@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet, useLocation, useNavigate, redirect } fro
 import { LayoutDashboard, Users, Dumbbell, ClipboardList, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveRole } from "@/lib/strng";
 
 export const Route = createFileRoute("/_authenticated/coach")({
   beforeLoad: async ({ context }) => {

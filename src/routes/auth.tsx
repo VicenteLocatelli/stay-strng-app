@@ -67,9 +67,9 @@ function AuthPage() {
   const [forgot, setForgot] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
 
-  async function routeByRole(userId: string) {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    navigate({ to: data?.[0]?.role === "trainer" ? "/coach" : "/app" });
+  async function routeByRole(userId: string, userEmail?: string | null) {
+    const role = await resolveRole(userId, userEmail);
+    navigate({ to: role === "trainer" ? "/coach" : "/app" });
   }
 
   async function handleLogin(e: React.FormEvent): Promise<void> {
