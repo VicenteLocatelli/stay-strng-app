@@ -9,6 +9,30 @@ export const POINTS = {
 
 export const SLOGAN = "DON'T CHASE PERFECTION. STAY STRNG.";
 
+/** Único treinador principal autorizado no sistema. */
+export const MAIN_TRAINER_EMAIL = "vicente.locatelli@gmail.com";
+
+export function isMainTrainerEmail(email?: string | null) {
+  return (email ?? "").trim().toLowerCase() === MAIN_TRAINER_EMAIL;
+}
+
+/** Resolve o papel do usuário: e-mail do treinador principal sempre é "trainer". */
+export async function resolveRole(userId: string, email?: string | null) {
+  if (isMainTrainerEmail(email)) return "trainer" as const;
+  const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+  return (data?.[0]?.role ?? "student") as "trainer" | "student";
+}
+
+/** Intensidade recomendada legível a partir da carga prescrita. */
+export function loadHint(recommended?: string | null) {
+  const v = (recommended ?? "").toLowerCase();
+  if (!v) return null;
+  if (/leve|light/.test(v)) return "LEVE";
+  if (/moderad|médi|medi/.test(v)) return "MODERADA";
+  if (/pesad|heavy|máx|max/.test(v)) return "PESADA";
+  return null;
+}
+
 export type LevelRow = { level: number; name: string; min_points: number };
 
 export const FALLBACK_LEVELS: LevelRow[] = [

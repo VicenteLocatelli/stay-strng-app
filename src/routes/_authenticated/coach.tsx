@@ -2,14 +2,13 @@ import { createFileRoute, Link, Outlet, useLocation, useNavigate, redirect } fro
 import { LayoutDashboard, Users, Dumbbell, ClipboardList, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveRole } from "@/lib/strng";
 
 export const Route = createFileRoute("/_authenticated/coach")({
   beforeLoad: async ({ context }) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", (context as { user: { id: string } }).user.id);
-    if (data?.[0]?.role !== "trainer") throw redirect({ to: "/app" });
+    const user = (context as { user: { id: string; email?: string } }).user;
+    const role = await resolveRole(user.id, user.email);
+    if (role !== "trainer") throw redirect({ to: "/app" });
   },
   component: CoachLayout,
 });

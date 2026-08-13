@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
-import { SLOGAN } from "@/lib/strng";
+import { SLOGAN, resolveRole } from "@/lib/strng";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -67,9 +67,9 @@ function AuthPage() {
   const [forgot, setForgot] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
 
-  async function routeByRole(userId: string) {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    navigate({ to: data?.[0]?.role === "trainer" ? "/coach" : "/app" });
+  async function routeByRole(userId: string, userEmail?: string | null) {
+    const role = await resolveRole(userId, userEmail);
+    navigate({ to: role === "trainer" ? "/coach" : "/app" });
   }
 
   async function handleLogin(e: React.FormEvent): Promise<void> {
@@ -81,7 +81,7 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    if (data.user) await routeByRole(data.user.id);
+    if (data.user) await routeByRole(data.user.id, data.user.email);
   }
 
   async function handleSignup(e: React.FormEvent): Promise<void> {
@@ -106,7 +106,7 @@ function AuthPage() {
     }
     if (data.session && data.user) {
       toast.success("Conta criada. Bem-vindo à STAY STRNG!");
-      await routeByRole(data.user.id);
+      await routeByRole(data.user.id, data.user.email);
     } else {
       toast.success("Confira seu e-mail para confirmar a conta.");
     }
@@ -137,7 +137,7 @@ function AuthPage() {
     }
     if (result.redirected) return;
     const { data } = await supabase.auth.getUser();
-    if (data.user) await routeByRole(data.user.id);
+    if (data.user) await routeByRole(data.user.id, data.user.email);
   }
 
   return (

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { FALLBACK_LEVELS, type LevelRow } from "@/lib/strng";
+import { FALLBACK_LEVELS, resolveRole, type LevelRow } from "@/lib/strng";
 
 export type AppRole = "trainer" | "student";
 
@@ -20,12 +20,11 @@ export function useProfile() {
     queryKey: ["profile", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const [{ data: profile }, { data: roles }] = await Promise.all([
+      const [{ data: profile }, role] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", user!.id),
+        resolveRole(user!.id, user!.email),
       ]);
-      const role = (roles?.[0]?.role ?? "student") as AppRole;
-      return { profile, role, userId: user!.id, email: user!.email ?? "" };
+      return { profile, role: role as AppRole, userId: user!.id, email: user!.email ?? "" };
     },
   });
 }
