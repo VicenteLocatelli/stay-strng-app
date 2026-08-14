@@ -488,6 +488,14 @@ function StudentDetail() {
             {s.student_feedback && (
               <p className="mt-2 rounded-md bg-muted p-2 text-xs">Aluno: {s.student_feedback}</p>
             )}
+            {data?.photos?.[s.id] && (
+              <img
+                src={data.photos[s.id]}
+                alt={`Foto pós-treino de ${s.workout_name}`}
+                loading="lazy"
+                className="mt-2 h-40 w-full rounded-md border border-border object-cover"
+              />
+            )}
           </li>
         ))}
       </ul>
