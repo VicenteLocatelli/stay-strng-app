@@ -289,6 +289,7 @@ export type Database = {
           plan_price: number
           started_at: string
           updated_at: string
+          water_goal_ml: number
           weekly_target: number
         }
         Insert: {
@@ -304,6 +305,7 @@ export type Database = {
           plan_price?: number
           started_at?: string
           updated_at?: string
+          water_goal_ml?: number
           weekly_target?: number
         }
         Update: {
@@ -319,7 +321,38 @@ export type Database = {
           plan_price?: number
           started_at?: string
           updated_at?: string
+          water_goal_ml?: number
           weekly_target?: number
+        }
+        Relationships: []
+      }
+      progress_photos: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          pose: string
+          storage_path: string
+          student_id: string
+          taken_on: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          pose?: string
+          storage_path: string
+          student_id: string
+          taken_on?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          pose?: string
+          storage_path?: string
+          student_id?: string
+          taken_on?: string
         }
         Relationships: []
       }
@@ -351,6 +384,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      student_checkins: {
+        Row: {
+          created_at: string
+          diet_adherence: number | null
+          energy: number | null
+          id: string
+          notes: string | null
+          sleep_quality: number | null
+          soreness: number | null
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          diet_adherence?: number | null
+          energy?: number | null
+          id?: string
+          notes?: string | null
+          sleep_quality?: number | null
+          soreness?: number | null
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          diet_adherence?: number | null
+          energy?: number | null
+          id?: string
+          notes?: string | null
+          sleep_quality?: number | null
+          soreness?: number | null
+          student_id?: string
+        }
+        Relationships: []
       }
       student_feedbacks: {
         Row: {
@@ -534,6 +600,33 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      water_logs: {
+        Row: {
+          amount_ml: number
+          created_at: string
+          id: string
+          log_date: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_ml?: number
+          created_at?: string
+          id?: string
+          log_date?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_ml?: number
+          created_at?: string
+          id?: string
+          log_date?: string
+          student_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
