@@ -84,6 +84,27 @@ function StudentDetail() {
             .order("created_at", { ascending: false }),
           supabase.from("exercises").select("id,name,muscle_group").eq("active", true).order("name"),
         ]);
+
+      const photoRows =
+        (
+          await supabase
+            .from("workout_completion_photos")
+            .select("session_id,storage_path")
+            .eq("student_id", studentId)
+        ).data ?? [];
+      const signed = photoRows.length
+        ? (
+            await supabase.storage
+              .from("workout-photos")
+              .createSignedUrls(photoRows.map((p) => p.storage_path), 3600)
+          ).data ?? []
+        : [];
+      const photos: Record<string, string> = {};
+      photoRows.forEach((p, i) => {
+        const url = signed[i]?.signedUrl;
+        if (url) photos[p.session_id] = url;
+      });
+
       return {
         profile: profile.data,
         sessions: sessions.data ?? [],
@@ -92,6 +113,7 @@ function StudentDetail() {
         measurements: measurements.data ?? [],
         feedbacks: feedbacks.data ?? [],
         exercises: exercises.data ?? [],
+        photos,
       };
     },
   });
@@ -465,6 +487,14 @@ function StudentDetail() {
             </p>
             {s.student_feedback && (
               <p className="mt-2 rounded-md bg-muted p-2 text-xs">Aluno: {s.student_feedback}</p>
+            )}
+            {data?.photos?.[s.id] && (
+              <img
+                src={data.photos[s.id]}
+                alt={`Foto pós-treino de ${s.workout_name}`}
+                loading="lazy"
+                className="mt-2 h-40 w-full rounded-md border border-border object-cover"
+              />
             )}
           </li>
         ))}
