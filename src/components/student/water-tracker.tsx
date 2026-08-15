@@ -20,9 +20,9 @@ export function WaterTracker({
   goalMl,
   weightKg,
 }: {
-  studentId?: string;
+  studentId?: string | undefined;
   goalMl: number;
-  weightKg?: number | null;
+  weightKg?: number | null | undefined;
 }) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);

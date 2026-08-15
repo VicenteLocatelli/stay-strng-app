@@ -238,13 +238,12 @@ function QuickCard({
   title: string;
   subtitle: string;
   to: string;
-  params?: Record<string, string>;
-  wide?: boolean;
+  params?: Record<string, string> | undefined;
+  wide?: boolean | undefined;
 }) {
   return (
     <Link
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      to={to as any}
+      to={to as never}
       params={params as never}
       className={`block rounded-2xl border border-border bg-card p-4 transition hover:border-primary ${wide ? "w-full" : ""}`}
     >
