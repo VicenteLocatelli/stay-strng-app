@@ -16,8 +16,10 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
+import { Route as AuthenticatedAppDietRouteImport } from './routes/_authenticated/app.diet'
 import { Route as AuthenticatedAppHistoryRouteImport } from './routes/_authenticated/app.history'
 import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authenticated/app.profile'
+import { Route as AuthenticatedAppWorkoutsRouteImport } from './routes/_authenticated/app.workouts'
 import { Route as AuthenticatedCoachIndexRouteImport } from './routes/_authenticated/coach.index'
 import { Route as AuthenticatedCoachExercisesRouteImport } from './routes/_authenticated/coach.exercises'
 import { Route as AuthenticatedCoachWorkoutsRouteImport } from './routes/_authenticated/coach.workouts'
@@ -59,6 +61,11 @@ const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppDietRoute = AuthenticatedAppDietRouteImport.update({
+  id: '/diet',
+  path: '/diet',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppHistoryRoute = AuthenticatedAppHistoryRouteImport.update({
   id: '/history',
   path: '/history',
@@ -69,6 +76,12 @@ const AuthenticatedAppProfileRoute = AuthenticatedAppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppWorkoutsRoute =
+  AuthenticatedAppWorkoutsRouteImport.update({
+    id: '/workouts',
+    path: '/workouts',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedCoachIndexRoute = AuthenticatedCoachIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -111,8 +124,10 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/coach': typeof AuthenticatedCoachRouteWithChildren
+  '/app/diet': typeof AuthenticatedAppDietRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
+  '/app/workouts': typeof AuthenticatedAppWorkoutsRoute
   '/coach/exercises': typeof AuthenticatedCoachExercisesRoute
   '/coach/workouts': typeof AuthenticatedCoachWorkoutsRoute
   '/train/$workoutId': typeof AuthenticatedTrainWorkoutIdRoute
@@ -125,8 +140,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/app/diet': typeof AuthenticatedAppDietRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
+  '/app/workouts': typeof AuthenticatedAppWorkoutsRoute
   '/coach/exercises': typeof AuthenticatedCoachExercisesRoute
   '/coach/workouts': typeof AuthenticatedCoachWorkoutsRoute
   '/train/$workoutId': typeof AuthenticatedTrainWorkoutIdRoute
@@ -143,8 +160,10 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/coach': typeof AuthenticatedCoachRouteWithChildren
+  '/_authenticated/app/diet': typeof AuthenticatedAppDietRoute
   '/_authenticated/app/history': typeof AuthenticatedAppHistoryRoute
   '/_authenticated/app/profile': typeof AuthenticatedAppProfileRoute
+  '/_authenticated/app/workouts': typeof AuthenticatedAppWorkoutsRoute
   '/_authenticated/coach/exercises': typeof AuthenticatedCoachExercisesRoute
   '/_authenticated/coach/workouts': typeof AuthenticatedCoachWorkoutsRoute
   '/_authenticated/train/$workoutId': typeof AuthenticatedTrainWorkoutIdRoute
@@ -161,8 +180,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/app'
     | '/coach'
+    | '/app/diet'
     | '/app/history'
     | '/app/profile'
+    | '/app/workouts'
     | '/coach/exercises'
     | '/coach/workouts'
     | '/train/$workoutId'
@@ -175,8 +196,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/app/diet'
     | '/app/history'
     | '/app/profile'
+    | '/app/workouts'
     | '/coach/exercises'
     | '/coach/workouts'
     | '/train/$workoutId'
@@ -192,8 +215,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/app'
     | '/_authenticated/coach'
+    | '/_authenticated/app/diet'
     | '/_authenticated/app/history'
     | '/_authenticated/app/profile'
+    | '/_authenticated/app/workouts'
     | '/_authenticated/coach/exercises'
     | '/_authenticated/coach/workouts'
     | '/_authenticated/train/$workoutId'
@@ -261,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/diet': {
+      id: '/_authenticated/app/diet'
+      path: '/diet'
+      fullPath: '/app/diet'
+      preLoaderRoute: typeof AuthenticatedAppDietRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/history': {
       id: '/_authenticated/app/history'
       path: '/history'
@@ -273,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/app/profile'
       preLoaderRoute: typeof AuthenticatedAppProfileRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/workouts': {
+      id: '/_authenticated/app/workouts'
+      path: '/workouts'
+      fullPath: '/app/workouts'
+      preLoaderRoute: typeof AuthenticatedAppWorkoutsRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/coach/': {
@@ -321,14 +360,18 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppDietRoute: typeof AuthenticatedAppDietRoute
   AuthenticatedAppHistoryRoute: typeof AuthenticatedAppHistoryRoute
   AuthenticatedAppProfileRoute: typeof AuthenticatedAppProfileRoute
+  AuthenticatedAppWorkoutsRoute: typeof AuthenticatedAppWorkoutsRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppDietRoute: AuthenticatedAppDietRoute,
   AuthenticatedAppHistoryRoute: AuthenticatedAppHistoryRoute,
   AuthenticatedAppProfileRoute: AuthenticatedAppProfileRoute,
+  AuthenticatedAppWorkoutsRoute: AuthenticatedAppWorkoutsRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
 }
 
