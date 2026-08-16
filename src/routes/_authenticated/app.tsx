@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useLocation, redirect } from "@tanstack/react-router";
-import { Dumbbell, History, User } from "lucide-react";
+import { Home, Dumbbell, UtensilsCrossed, TrendingUp } from "lucide-react";
 import { resolveRole } from "@/lib/strng";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -12,10 +12,12 @@ export const Route = createFileRoute("/_authenticated/app")({
 });
 
 const NAV = [
-  { to: "/app", label: "Treinar", icon: Dumbbell },
-  { to: "/app/history", label: "Histórico", icon: History },
-  { to: "/app/profile", label: "Perfil", icon: User },
+  { to: "/app", label: "Home", icon: Home },
+  { to: "/app/workouts", label: "Treino", icon: Dumbbell },
+  { to: "/app/diet", label: "Dieta", icon: UtensilsCrossed },
+  { to: "/app/bldng", label: "BLDNG", icon: TrendingUp },
 ] as const;
+
 
 function StudentLayout() {
   const { pathname } = useLocation();
