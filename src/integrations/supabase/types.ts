@@ -173,6 +173,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          env_gym: boolean
+          env_home: boolean
           equipment: string | null
           execution: string | null
           id: string
@@ -190,6 +192,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          env_gym?: boolean
+          env_home?: boolean
           equipment?: string | null
           execution?: string | null
           id?: string
@@ -207,6 +211,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          env_gym?: boolean
+          env_home?: boolean
           equipment?: string | null
           execution?: string | null
           id?: string
