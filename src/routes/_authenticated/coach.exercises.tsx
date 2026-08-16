@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, X, Save } from "lucide-react";
 import { MUSCLE_GROUPS } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/coach/exercises")({
@@ -32,6 +32,22 @@ const EMPTY = {
   image_url: "",
   video_url: "",
   is_cardio: false,
+  env_gym: true,
+  env_home: false,
+};
+
+type ExerciseRow = {
+  id: string;
+  name: string;
+  muscle_group: string | null;
+  equipment: string | null;
+  execution: string | null;
+  common_mistakes: string | null;
+  image_url: string | null;
+  video_url: string | null;
+  is_cardio: boolean;
+  env_gym: boolean;
+  env_home: boolean;
 };
 
 function ExercisesPage() {
@@ -39,6 +55,7 @@ function ExercisesPage() {
   const qc = useQueryClient();
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<string>("");
+  const [env, setEnv] = useState<"all" | "gym" | "home">("all");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ ...EMPTY });
   const [saving, setSaving] = useState(false);
@@ -48,11 +65,13 @@ function ExercisesPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("exercises")
-        .select("id,name,muscle_group,equipment,execution,common_mistakes,image_url,video_url,is_cardio")
+        .select(
+          "id,name,muscle_group,equipment,execution,common_mistakes,image_url,video_url,is_cardio,env_gym,env_home",
+        )
         .eq("active", true)
         .order("muscle_group")
         .order("name");
-      return data ?? [];
+      return (data ?? []) as ExerciseRow[];
     },
   });
 
@@ -66,12 +85,17 @@ function ExercisesPage() {
     const q = query.trim().toLowerCase();
     const okQuery = !q || e.name.toLowerCase().includes(q);
     const okGroup = !group || (e.muscle_group ?? "").toLowerCase() === group.toLowerCase();
-    return okQuery && okGroup;
+    const okEnv = env === "all" || (env === "gym" ? e.env_gym : e.env_home);
+    return okQuery && okGroup && okEnv;
   });
 
   async function save() {
     if (!form.name.trim()) {
       toast.error("Informe o nome do exercício.");
+      return;
+    }
+    if (!form.env_gym && !form.env_home) {
+      toast.error("Selecione pelo menos um ambiente: academia ou em casa.");
       return;
     }
     setSaving(true);
@@ -84,6 +108,8 @@ function ExercisesPage() {
       image_url: form.image_url || null,
       video_url: form.video_url || null,
       is_cardio: form.is_cardio,
+      env_gym: form.env_gym,
+      env_home: form.env_home,
       created_by: me!.userId,
     });
     setSaving(false);
@@ -156,6 +182,33 @@ function ExercisesPage() {
               Exercício de cardio (registra apenas tempo)
             </label>
           </div>
+
+          <div className="rounded-lg border border-border p-3">
+            <p className="text-[10px] tracking-widest text-muted-foreground">
+              AMBIENTE (OBRIGATÓRIO)
+            </p>
+            <div className="mt-2 flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary"
+                  checked={form.env_gym}
+                  onChange={(e) => setForm({ ...form, env_gym: e.target.checked })}
+                />
+                Academia
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary"
+                  checked={form.env_home}
+                  onChange={(e) => setForm({ ...form, env_home: e.target.checked })}
+                />
+                Em casa
+              </label>
+            </div>
+          </div>
+
           <div className="space-y-1">
             <Label className="text-xs">Execução</Label>
             <Textarea
@@ -187,6 +240,12 @@ function ExercisesPage() {
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
+        <Chip active={env === "all"} label="Todos os ambientes" onClick={() => setEnv("all")} />
+        <Chip active={env === "gym"} label="Academia" onClick={() => setEnv("gym")} />
+        <Chip active={env === "home"} label="Em casa" onClick={() => setEnv("home")} />
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
         <Chip active={!group} label="Todos" onClick={() => setGroup("")} />
         {groups.map((g) => (
           <Chip key={g} active={group === g} label={g} onClick={() => setGroup(g)} />
@@ -195,36 +254,110 @@ function ExercisesPage() {
 
       <ul className="mt-6 grid gap-3 sm:grid-cols-2">
         {filtered.map((e) => (
-          <li key={e.id} className="rounded-xl border border-border bg-card p-4">
-            {e.image_url && (
-              <img
-                src={e.image_url}
-                alt={`Demonstração do exercício ${e.name}`}
-                loading="lazy"
-                className="mb-3 h-32 w-full rounded-lg object-cover"
-              />
-            )}
-            <p className="text-xs tracking-widest text-primary">
-              {(e.muscle_group ?? "GERAL").toUpperCase()}
-              {e.is_cardio ? " · CARDIO" : ""}
-            </p>
-            <p className="strng-title mt-1 text-lg font-bold">{e.name}</p>
-            {e.equipment && <p className="text-xs text-muted-foreground">{e.equipment}</p>}
-            {e.execution && <p className="mt-2 text-xs text-muted-foreground">{e.execution}</p>}
-            {e.video_url && (
-              <a
-                href={e.video_url}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-2 inline-block text-xs text-primary underline"
-              >
-                Ver vídeo de demonstração
-              </a>
-            )}
-          </li>
+          <ExerciseCard
+            key={e.id}
+            exercise={e}
+            onSaved={() => qc.invalidateQueries({ queryKey: ["exercises"] })}
+          />
         ))}
       </ul>
     </main>
+  );
+}
+
+function ExerciseCard({ exercise, onSaved }: { exercise: ExerciseRow; onSaved: () => void }) {
+  const [video, setVideo] = useState(exercise.video_url ?? "");
+  const [gym, setGym] = useState(exercise.env_gym);
+  const [home, setHome] = useState(exercise.env_home);
+  const [saving, setSaving] = useState(false);
+
+  const dirty =
+    video !== (exercise.video_url ?? "") || gym !== exercise.env_gym || home !== exercise.env_home;
+
+  async function save() {
+    if (!gym && !home) {
+      toast.error("Selecione pelo menos um ambiente.");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase
+      .from("exercises")
+      .update({ video_url: video.trim() || null, env_gym: gym, env_home: home })
+      .eq("id", exercise.id);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Exercício atualizado.");
+    onSaved();
+  }
+
+  return (
+    <li className="rounded-xl border border-border bg-card p-4">
+      {exercise.image_url && (
+        <img
+          src={exercise.image_url}
+          alt={`Demonstração do exercício ${exercise.name}`}
+          loading="lazy"
+          className="mb-3 h-32 w-full rounded-lg object-cover"
+        />
+      )}
+      <p className="text-xs tracking-widest text-primary">
+        {(exercise.muscle_group ?? "GERAL").toUpperCase()}
+        {exercise.is_cardio ? " · CARDIO" : ""}
+      </p>
+      <p className="strng-title mt-1 text-lg font-bold">{exercise.name}</p>
+      {exercise.equipment && <p className="text-xs text-muted-foreground">{exercise.equipment}</p>}
+      {exercise.execution && <p className="mt-2 text-xs text-muted-foreground">{exercise.execution}</p>}
+
+      <div className="mt-3 flex flex-wrap gap-3 text-xs">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-primary"
+            checked={gym}
+            onChange={(e) => setGym(e.target.checked)}
+          />
+          Academia
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-primary"
+            checked={home}
+            onChange={(e) => setHome(e.target.checked)}
+          />
+          Em casa
+        </label>
+      </div>
+
+      <div className="mt-3 space-y-1">
+        <Label className="text-[10px] tracking-widest text-muted-foreground">URL DO VÍDEO</Label>
+        <div className="flex gap-2">
+          <Input
+            className="h-9"
+            placeholder="https://…"
+            value={video}
+            onChange={(e) => setVideo(e.target.value)}
+          />
+          <Button size="icon" variant="outline" aria-label="Salvar" disabled={!dirty || saving} onClick={save}>
+            <Save className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {exercise.video_url && (
+        <a
+          href={exercise.video_url}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 inline-block text-xs text-primary underline"
+        >
+          Ver vídeo de demonstração
+        </a>
+      )}
+    </li>
   );
 }
 
