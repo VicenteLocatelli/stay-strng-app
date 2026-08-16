@@ -27,7 +27,12 @@ function StudentLayout() {
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur">
         <ul className="mx-auto flex max-w-lg">
           {NAV.map(({ to, label, icon: Icon }) => {
-            const active = to === "/app" ? pathname === "/app" : pathname.startsWith(to);
+            const active =
+              to === "/app"
+                ? pathname === "/app"
+                : to === "/app/workouts"
+                  ? pathname.startsWith("/app/workouts") || pathname.startsWith("/app/history")
+                  : pathname.startsWith(to);
             return (
               <li key={to} className="flex-1">
                 <Link
