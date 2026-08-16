@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useLocation, redirect } from "@tanstack/react-router";
-import { Dumbbell, History, User } from "lucide-react";
+import { Home, Dumbbell, UtensilsCrossed, TrendingUp } from "lucide-react";
 import { resolveRole } from "@/lib/strng";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -12,10 +12,12 @@ export const Route = createFileRoute("/_authenticated/app")({
 });
 
 const NAV = [
-  { to: "/app", label: "Treinar", icon: Dumbbell },
-  { to: "/app/history", label: "Histórico", icon: History },
-  { to: "/app/profile", label: "Perfil", icon: User },
+  { to: "/app", label: "Home", icon: Home },
+  { to: "/app/workouts", label: "Treino", icon: Dumbbell },
+  { to: "/app/diet", label: "Dieta", icon: UtensilsCrossed },
+  { to: "/app/bldng", label: "BLDNG", icon: TrendingUp },
 ] as const;
+
 
 function StudentLayout() {
   const { pathname } = useLocation();
@@ -25,7 +27,12 @@ function StudentLayout() {
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur">
         <ul className="mx-auto flex max-w-lg">
           {NAV.map(({ to, label, icon: Icon }) => {
-            const active = to === "/app" ? pathname === "/app" : pathname.startsWith(to);
+            const active =
+              to === "/app"
+                ? pathname === "/app"
+                : to === "/app/workouts"
+                  ? pathname.startsWith("/app/workouts") || pathname.startsWith("/app/history")
+                  : pathname.startsWith(to);
             return (
               <li key={to} className="flex-1">
                 <Link
