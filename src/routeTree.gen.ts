@@ -16,6 +16,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
+import { Route as AuthenticatedAppBldngRouteImport } from './routes/_authenticated/app.bldng'
 import { Route as AuthenticatedAppDietRouteImport } from './routes/_authenticated/app.diet'
 import { Route as AuthenticatedAppHistoryRouteImport } from './routes/_authenticated/app.history'
 import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authenticated/app.profile'
@@ -59,6 +60,11 @@ const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
 const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppBldngRoute = AuthenticatedAppBldngRouteImport.update({
+  id: '/bldng',
+  path: '/bldng',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const AuthenticatedAppDietRoute = AuthenticatedAppDietRouteImport.update({
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/coach': typeof AuthenticatedCoachRouteWithChildren
+  '/app/bldng': typeof AuthenticatedAppBldngRoute
   '/app/diet': typeof AuthenticatedAppDietRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/app/bldng': typeof AuthenticatedAppBldngRoute
   '/app/diet': typeof AuthenticatedAppDietRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/coach': typeof AuthenticatedCoachRouteWithChildren
+  '/_authenticated/app/bldng': typeof AuthenticatedAppBldngRoute
   '/_authenticated/app/diet': typeof AuthenticatedAppDietRoute
   '/_authenticated/app/history': typeof AuthenticatedAppHistoryRoute
   '/_authenticated/app/profile': typeof AuthenticatedAppProfileRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/app'
     | '/coach'
+    | '/app/bldng'
     | '/app/diet'
     | '/app/history'
     | '/app/profile'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/app/bldng'
     | '/app/diet'
     | '/app/history'
     | '/app/profile'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/app'
     | '/_authenticated/coach'
+    | '/_authenticated/app/bldng'
     | '/_authenticated/app/diet'
     | '/_authenticated/app/history'
     | '/_authenticated/app/profile'
@@ -284,6 +296,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/bldng': {
+      id: '/_authenticated/app/bldng'
+      path: '/bldng'
+      fullPath: '/app/bldng'
+      preLoaderRoute: typeof AuthenticatedAppBldngRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/diet': {
@@ -360,6 +379,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppBldngRoute: typeof AuthenticatedAppBldngRoute
   AuthenticatedAppDietRoute: typeof AuthenticatedAppDietRoute
   AuthenticatedAppHistoryRoute: typeof AuthenticatedAppHistoryRoute
   AuthenticatedAppProfileRoute: typeof AuthenticatedAppProfileRoute
@@ -368,6 +388,7 @@ interface AuthenticatedAppRouteChildren {
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppBldngRoute: AuthenticatedAppBldngRoute,
   AuthenticatedAppDietRoute: AuthenticatedAppDietRoute,
   AuthenticatedAppHistoryRoute: AuthenticatedAppHistoryRoute,
   AuthenticatedAppProfileRoute: AuthenticatedAppProfileRoute,
