@@ -422,8 +422,12 @@ function StudentDetail() {
           <Plus className="mr-1 h-4 w-4" /> Registrar medidas
         </Button>
       </div>
+        </>
+      )}
 
-      <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
+      {tab === "workouts" && (
+        <>
+      <h2 className="mt-2 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
         TREINOS ATIVOS E PRESCRIÇÃO
       </h2>
       <div className="mb-3 flex gap-2">
