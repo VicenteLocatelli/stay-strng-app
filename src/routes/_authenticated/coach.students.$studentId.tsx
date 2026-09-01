@@ -50,6 +50,8 @@ function StudentDetail() {
   const qc = useQueryClient();
   const [feedback, setFeedback] = useState("");
   const [newWorkout, setNewWorkout] = useState("");
+  const [tab, setTab] = useState<TabId>("overview");
+  const [env, setEnv] = useState<EnvFilter>("all");
   const [measure, setMeasure] = useState({
     weight_kg: "",
     body_fat: "",
