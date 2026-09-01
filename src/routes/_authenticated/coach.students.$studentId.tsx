@@ -478,7 +478,10 @@ function StudentDetail() {
                   />
                 ))}
               </div>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3">
+                <EnvFilterChips value={env} onChange={setEnv} />
+              </div>
+              <div className="mt-2 flex gap-2">
                 <select
                   className="h-10 flex-1 rounded-md border border-input bg-background px-3 text-sm"
                   defaultValue=""
