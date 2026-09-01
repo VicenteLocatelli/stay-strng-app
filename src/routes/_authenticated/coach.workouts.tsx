@@ -68,7 +68,11 @@ function WorkoutsPage() {
           .select("student_id")
           .eq("trainer_id", me!.userId)
           .eq("active", true),
-        supabase.from("exercises").select("id,name,muscle_group").eq("active", true).order("name"),
+        supabase
+          .from("exercises")
+          .select("id,name,muscle_group,env_gym,env_home")
+          .eq("active", true)
+          .order("name"),
       ]);
       const ids = (links.data ?? []).map((l) => l.student_id);
       const { data: profiles } = ids.length
