@@ -21,6 +21,16 @@ import {
   CartesianGrid,
 } from "recharts";
 import { PrescriptionRow, type PrescriptionPatch } from "./coach.workouts";
+import { EnvFilterChips, filterByEnv, type EnvFilter } from "@/lib/exercise-env";
+
+const TABS = [
+  { id: "overview", label: "Visão geral" },
+  { id: "workouts", label: "Treinos" },
+  { id: "history", label: "Histórico" },
+  { id: "diet", label: "Dieta" },
+  { id: "checkins", label: "Check-ins" },
+] as const;
+type TabId = (typeof TABS)[number]["id"];
 
 export const Route = createFileRoute("/_authenticated/coach/students/$studentId")({
   head: () => ({
@@ -40,6 +50,8 @@ function StudentDetail() {
   const qc = useQueryClient();
   const [feedback, setFeedback] = useState("");
   const [newWorkout, setNewWorkout] = useState("");
+  const [tab, setTab] = useState<TabId>("overview");
+  const [env, setEnv] = useState<EnvFilter>("all");
   const [measure, setMeasure] = useState({
     weight_kg: "",
     body_fat: "",
@@ -53,7 +65,7 @@ function StudentDetail() {
   const { data } = useQuery({
     queryKey: ["coach-student", studentId],
     queryFn: async () => {
-      const [profile, sessions, workouts, points, measurements, feedbacks, exercises] =
+      const [profile, sessions, workouts, points, measurements, feedbacks, exercises, checkins] =
         await Promise.all([
           supabase.from("profiles").select("*").eq("id", studentId).maybeSingle(),
           supabase
@@ -82,7 +94,16 @@ function StudentDetail() {
             .select("id,content,created_at,next_feedback_at")
             .eq("student_id", studentId)
             .order("created_at", { ascending: false }),
-          supabase.from("exercises").select("id,name,muscle_group").eq("active", true).order("name"),
+          supabase
+            .from("exercises")
+            .select("id,name,muscle_group,env_gym,env_home")
+            .eq("active", true)
+            .order("name"),
+          supabase
+            .from("student_checkins")
+            .select("id,sleep_quality,energy,soreness,diet_adherence,notes,created_at")
+            .eq("student_id", studentId)
+            .order("created_at", { ascending: false }),
         ]);
 
       const photoRows =
@@ -113,6 +134,7 @@ function StudentDetail() {
         measurements: measurements.data ?? [],
         feedbacks: feedbacks.data ?? [],
         exercises: exercises.data ?? [],
+        checkins: checkins.data ?? [],
         photos,
       };
     },
@@ -264,7 +286,26 @@ function StudentDetail() {
         <Box label="Pontos" value={`${data?.totalPoints ?? 0}`} />
       </section>
 
-      <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
+      <nav className="mt-6 flex flex-wrap gap-2">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
+              tab === t.id
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border text-muted-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+
+      {tab === "overview" && (
+        <>
+      <h2 className="mt-6 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
         PLANO E FEEDBACK
       </h2>
       <div className="grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-3">
@@ -400,8 +441,12 @@ function StudentDetail() {
           <Plus className="mr-1 h-4 w-4" /> Registrar medidas
         </Button>
       </div>
+        </>
+      )}
 
-      <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
+      {tab === "workouts" && (
+        <>
+      <h2 className="mt-2 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
         TREINOS ATIVOS E PRESCRIÇÃO
       </h2>
       <div className="mb-3 flex gap-2">
@@ -433,7 +478,10 @@ function StudentDetail() {
                   />
                 ))}
               </div>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3">
+                <EnvFilterChips value={env} onChange={setEnv} />
+              </div>
+              <div className="mt-2 flex gap-2">
                 <select
                   className="h-10 flex-1 rounded-md border border-input bg-background px-3 text-sm"
                   defaultValue=""
@@ -445,7 +493,7 @@ function StudentDetail() {
                   }}
                 >
                   <option value="">Adicionar exercício…</option>
-                  {(data?.exercises ?? []).map((e) => (
+                  {filterByEnv(data?.exercises ?? [], env).map((e) => (
                     <option key={e.id} value={e.id}>
                       {e.name}
                       {e.muscle_group ? ` · ${e.muscle_group}` : ""}
@@ -468,12 +516,17 @@ function StudentDetail() {
           );
         })}
       </ul>
+        </>
+      )}
 
-      <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
-        ÚLTIMAS SESSÕES
-      </h2>
+      {tab === "history" && (
       <ul className="space-y-2">
-        {(data?.sessions ?? []).slice(0, 20).map((s) => (
+        {(data?.sessions ?? []).length === 0 && (
+          <li className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+            Nenhum treino concluído ainda.
+          </li>
+        )}
+        {(data?.sessions ?? []).slice(0, 30).map((s) => (
           <li key={s.id} className="rounded-lg border border-border bg-card p-4 text-sm">
             <div className="flex justify-between">
               <span className="font-semibold">{s.workout_name}</span>
@@ -499,6 +552,41 @@ function StudentDetail() {
           </li>
         ))}
       </ul>
+      )}
+
+      {tab === "diet" && (
+        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
+          <p className="strng-title text-lg font-bold">Dieta em breve</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            O plano alimentar deste aluno será montado aqui. Por enquanto, use o campo de feedback
+            para orientações nutricionais.
+          </p>
+        </div>
+      )}
+
+      {tab === "checkins" && (
+        <ul className="space-y-2">
+          {(data?.checkins ?? []).length === 0 && (
+            <li className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              Nenhum check-in enviado por este aluno.
+            </li>
+          )}
+          {(data?.checkins ?? []).map((c) => (
+            <li key={c.id} className="rounded-lg border border-border bg-card p-4 text-sm">
+              <p className="text-xs text-muted-foreground">
+                {new Date(c.created_at).toLocaleDateString("pt-BR")}
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <Box label="Sono" value={`${c.sleep_quality ?? "-"}`} />
+                <Box label="Energia" value={`${c.energy ?? "-"}`} />
+                <Box label="Dores" value={`${c.soreness ?? "-"}`} />
+                <Box label="Dieta" value={`${c.diet_adherence ?? "-"}`} />
+              </div>
+              {c.notes && <p className="mt-2 rounded-md bg-muted p-2 text-xs">{c.notes}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   );
 }

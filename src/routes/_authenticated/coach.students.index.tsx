@@ -6,7 +6,7 @@ import { useProfile } from "@/hooks/use-strng";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ChevronRight, Search, CheckCircle2, Clock } from "lucide-react";
+import { Search, CheckCircle2, Clock, ChevronRight } from "lucide-react";
 import { planLabel } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/coach/students/")({
@@ -32,11 +32,14 @@ type StudentRow = {
   last_feedback_at: string | null;
 };
 
+type Filter = "all" | "pending" | "scheduled";
+
 function StudentsPage() {
   const { data: me } = useProfile();
   const qc = useQueryClient();
   const [email, setEmail] = useState("");
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
 
   const { data } = useQuery({
     queryKey: ["coach-students", me?.userId],
@@ -62,24 +65,30 @@ function StudentsPage() {
     },
   });
 
+  const now = Date.now();
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const list = data?.students ?? [];
-    if (!q) return list;
-    return list.filter(
-      (s) =>
-        s.full_name.toLowerCase().includes(q) ||
-        (data?.emails[s.id] ?? "").toLowerCase().includes(q),
-    );
-  }, [query, data]);
+    let list = data?.students ?? [];
+    if (q) {
+      list = list.filter(
+        (s) =>
+          s.full_name.toLowerCase().includes(q) ||
+          (data?.emails[s.id] ?? "").toLowerCase().includes(q),
+      );
+    }
+    if (filter === "pending") {
+      list = list.filter((s) => !s.next_feedback_at || new Date(s.next_feedback_at).getTime() <= now);
+    }
+    if (filter === "scheduled") {
+      list = list.filter((s) => s.next_feedback_at && new Date(s.next_feedback_at).getTime() > now);
+    }
+    return list;
+  }, [query, data, filter, now]);
 
-  const now = Date.now();
-  const pending = filtered.filter(
+  const pendingCount = (data?.students ?? []).filter(
     (s) => !s.next_feedback_at || new Date(s.next_feedback_at).getTime() <= now,
-  );
-  const scheduled = filtered.filter(
-    (s) => s.next_feedback_at && new Date(s.next_feedback_at).getTime() > now,
-  );
+  ).length;
 
   async function addStudent() {
     const { error } = await supabase.rpc("link_student_by_email", { _email: email });
@@ -97,7 +106,7 @@ function StudentsPage() {
     <main className="mx-auto w-full max-w-4xl px-5 pt-8 pb-10">
       <h1 className="text-3xl font-bold">Alunos</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Novos alunos são vinculados automaticamente à sua carteira ao criar a conta.
+        {data?.students.length ?? 0} alunos na carteira · {pendingCount} com feedback pendente.
       </p>
 
       <div className="relative mt-6">
@@ -110,22 +119,68 @@ function StudentsPage() {
         />
       </div>
 
-      <Section
-        title="FEEDBACK PENDENTE"
-        icon={<Clock className="h-4 w-4 text-primary" />}
-        students={pending}
-        emails={data?.emails ?? {}}
-        empty="Nenhum feedback pendente agora."
-      />
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Chip active={filter === "all"} label="Todos" onClick={() => setFilter("all")} />
+        <Chip active={filter === "pending"} label="Feedback pendente" onClick={() => setFilter("pending")} />
+        <Chip active={filter === "scheduled"} label="Feedback futuro" onClick={() => setFilter("scheduled")} />
+      </div>
 
-      <Section
-        title="FEEDBACK FUTURO"
-        icon={<CheckCircle2 className="h-4 w-4 text-gold" />}
-        students={scheduled}
-        emails={data?.emails ?? {}}
-        empty="Nenhum atendimento agendado."
-        done
-      />
+      {filtered.length === 0 ? (
+        <p className="mt-6 rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          Nenhum aluno nesse filtro.
+        </p>
+      ) : (
+        <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((s) => {
+            const pending = !s.next_feedback_at || new Date(s.next_feedback_at).getTime() <= now;
+            const initials = (s.full_name || "Aluno")
+              .split(" ")
+              .slice(0, 2)
+              .map((p) => p[0])
+              .join("")
+              .toUpperCase();
+            return (
+              <li key={s.id}>
+                <Link
+                  to="/coach/students/$studentId"
+                  params={{ studentId: s.id }}
+                  className="flex h-full flex-col rounded-xl border border-border bg-card p-4 transition hover:border-primary"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="strng-title flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-sm font-bold text-primary">
+                      {initials}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold">{s.full_name || "Aluno"}</p>
+                      <p className="text-[10px] tracking-widest text-muted-foreground">
+                        {planLabel(s.plan)} · META {s.weekly_target}x
+                      </p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-primary" />
+                  </div>
+
+                  <p className="mt-3 line-clamp-1 text-xs text-muted-foreground">
+                    {s.goal || "Sem objetivo definido"}
+                  </p>
+
+                  <span
+                    className={`mt-3 inline-flex w-fit items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-semibold ${
+                      pending
+                        ? "border-primary/40 text-primary"
+                        : "border-gold/40 text-gold"
+                    }`}
+                  >
+                    {pending ? <Clock className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
+                    {pending
+                      ? "Feedback pendente"
+                      : `Próximo ${new Date(s.next_feedback_at!).toLocaleDateString("pt-BR")}`}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <div className="mt-10 rounded-xl border border-border bg-card p-4">
         <p className="text-xs tracking-widest text-muted-foreground">VINCULAR MANUALMENTE</p>
@@ -144,62 +199,16 @@ function StudentsPage() {
   );
 }
 
-function Section({
-  title,
-  icon,
-  students,
-  emails,
-  empty,
-  done,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  students: StudentRow[];
-  emails: Record<string, string>;
-  empty: string;
-  done?: boolean;
-}) {
+function Chip({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
   return (
-    <>
-      <h2 className="mt-8 mb-3 flex items-center gap-2 text-sm font-bold tracking-widest text-muted-foreground">
-        {icon} {title} ({students.length})
-      </h2>
-      {students.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          {empty}
-        </p>
-      ) : (
-        <ul className="space-y-2">
-          {students.map((s) => (
-            <li key={s.id}>
-              <Link
-                to="/coach/students/$studentId"
-                params={{ studentId: s.id }}
-                className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition hover:border-primary"
-              >
-                <div>
-                  <p className="flex items-center gap-2 font-semibold">
-                    {done && <CheckCircle2 className="h-4 w-4 text-gold" />}
-                    {s.full_name || "Aluno"}
-                    <span className="text-[10px] tracking-widest text-muted-foreground">
-                      {planLabel(s.plan)}
-                    </span>
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {emails[s.id] || s.goal || "Sem objetivo definido"} · meta {s.weekly_target}x/semana
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {s.next_feedback_at
-                      ? `Próximo feedback em ${new Date(s.next_feedback_at).toLocaleDateString("pt-BR")}`
-                      : `Feedback a cada ${s.feedback_interval_days} dias · nunca registrado`}
-                  </p>
-                </div>
-                <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+        active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+      }`}
+    >
+      {label}
+    </button>
   );
 }

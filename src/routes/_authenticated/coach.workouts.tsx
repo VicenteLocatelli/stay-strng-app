@@ -9,6 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Copy, Pencil, Plus, Trash2, X } from "lucide-react";
+import {
+  EnvFilterChips,
+  filterByEnv,
+  type CoachExercise,
+  type EnvFilter,
+} from "@/lib/exercise-env";
 
 export const Route = createFileRoute("/_authenticated/coach/workouts")({
   head: () => ({
@@ -68,7 +74,11 @@ function WorkoutsPage() {
           .select("student_id")
           .eq("trainer_id", me!.userId)
           .eq("active", true),
-        supabase.from("exercises").select("id,name,muscle_group").eq("active", true).order("name"),
+        supabase
+          .from("exercises")
+          .select("id,name,muscle_group,env_gym,env_home")
+          .eq("active", true)
+          .order("name"),
       ]);
       const ids = (links.data ?? []).map((l) => l.student_id);
       const { data: profiles } = ids.length
@@ -340,11 +350,12 @@ function TemplateEditor({
   onChanged,
 }: {
   templateId: string;
-  exercises: { id: string; name: string; muscle_group: string | null }[];
+  exercises: CoachExercise[];
   rows: TemplateExercise[];
   onChanged: () => void;
 }) {
   const [exerciseId, setExerciseId] = useState("");
+  const [env, setEnv] = useState<EnvFilter>("all");
 
   async function addExercise() {
     if (!exerciseId) return;
@@ -386,6 +397,7 @@ function TemplateEditor({
           onRemove={() => remove(r.id)}
         />
       ))}
+      <EnvFilterChips value={env} onChange={setEnv} />
       <div className="flex gap-2">
         <select
           className="h-10 flex-1 rounded-md border border-input bg-background px-3 text-sm"
@@ -393,7 +405,7 @@ function TemplateEditor({
           onChange={(e) => setExerciseId(e.target.value)}
         >
           <option value="">Adicionar exercício…</option>
-          {exercises.map((e) => (
+          {filterByEnv(exercises, env).map((e) => (
             <option key={e.id} value={e.id}>
               {e.name}
               {e.muscle_group ? ` · ${e.muscle_group}` : ""}
