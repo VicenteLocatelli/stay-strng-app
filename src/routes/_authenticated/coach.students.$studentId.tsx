@@ -490,12 +490,17 @@ function StudentDetail() {
           );
         })}
       </ul>
+        </>
+      )}
 
-      <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
-        ÚLTIMAS SESSÕES
-      </h2>
+      {tab === "history" && (
       <ul className="space-y-2">
-        {(data?.sessions ?? []).slice(0, 20).map((s) => (
+        {(data?.sessions ?? []).length === 0 && (
+          <li className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+            Nenhum treino concluído ainda.
+          </li>
+        )}
+        {(data?.sessions ?? []).slice(0, 30).map((s) => (
           <li key={s.id} className="rounded-lg border border-border bg-card p-4 text-sm">
             <div className="flex justify-between">
               <span className="font-semibold">{s.workout_name}</span>
