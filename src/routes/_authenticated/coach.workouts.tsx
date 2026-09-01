@@ -9,6 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Copy, Pencil, Plus, Trash2, X } from "lucide-react";
+import {
+  EnvFilterChips,
+  filterByEnv,
+  type CoachExercise,
+  type EnvFilter,
+} from "@/lib/exercise-env";
 
 export const Route = createFileRoute("/_authenticated/coach/workouts")({
   head: () => ({
