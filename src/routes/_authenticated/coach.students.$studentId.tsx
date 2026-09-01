@@ -493,7 +493,7 @@ function StudentDetail() {
                   }}
                 >
                   <option value="">Adicionar exercício…</option>
-                  {(data?.exercises ?? []).map((e) => (
+                  {filterByEnv(data?.exercises ?? [], env).map((e) => (
                     <option key={e.id} value={e.id}>
                       {e.name}
                       {e.muscle_group ? ` · ${e.muscle_group}` : ""}
