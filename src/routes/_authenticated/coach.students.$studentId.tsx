@@ -94,7 +94,16 @@ function StudentDetail() {
             .select("id,content,created_at,next_feedback_at")
             .eq("student_id", studentId)
             .order("created_at", { ascending: false }),
-          supabase.from("exercises").select("id,name,muscle_group").eq("active", true).order("name"),
+          supabase
+            .from("exercises")
+            .select("id,name,muscle_group,env_gym,env_home")
+            .eq("active", true)
+            .order("name"),
+          supabase
+            .from("student_checkins")
+            .select("id,sleep_quality,energy,soreness,diet_adherence,notes,created_at")
+            .eq("student_id", studentId)
+            .order("created_at", { ascending: false }),
         ]);
 
       const photoRows =
