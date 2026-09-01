@@ -344,11 +344,12 @@ function TemplateEditor({
   onChanged,
 }: {
   templateId: string;
-  exercises: { id: string; name: string; muscle_group: string | null }[];
+  exercises: CoachExercise[];
   rows: TemplateExercise[];
   onChanged: () => void;
 }) {
   const [exerciseId, setExerciseId] = useState("");
+  const [env, setEnv] = useState<EnvFilter>("all");
 
   async function addExercise() {
     if (!exerciseId) return;
