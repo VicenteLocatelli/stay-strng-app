@@ -286,7 +286,26 @@ function StudentDetail() {
         <Box label="Pontos" value={`${data?.totalPoints ?? 0}`} />
       </section>
 
-      <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
+      <nav className="mt-6 flex flex-wrap gap-2">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
+              tab === t.id
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border text-muted-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+
+      {tab === "overview" && (
+        <>
+      <h2 className="mt-6 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
         PLANO E FEEDBACK
       </h2>
       <div className="grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-3">
