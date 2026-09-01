@@ -21,6 +21,16 @@ import {
   CartesianGrid,
 } from "recharts";
 import { PrescriptionRow, type PrescriptionPatch } from "./coach.workouts";
+import { EnvFilterChips, filterByEnv, type EnvFilter } from "@/lib/exercise-env";
+
+const TABS = [
+  { id: "overview", label: "Visão geral" },
+  { id: "workouts", label: "Treinos" },
+  { id: "history", label: "Histórico" },
+  { id: "diet", label: "Dieta" },
+  { id: "checkins", label: "Check-ins" },
+] as const;
+type TabId = (typeof TABS)[number]["id"];
 
 export const Route = createFileRoute("/_authenticated/coach/students/$studentId")({
   head: () => ({
