@@ -134,6 +134,7 @@ function StudentDetail() {
         measurements: measurements.data ?? [],
         feedbacks: feedbacks.data ?? [],
         exercises: exercises.data ?? [],
+        checkins: checkins.data ?? [],
         photos,
       };
     },
