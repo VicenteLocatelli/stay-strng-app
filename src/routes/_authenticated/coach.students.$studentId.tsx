@@ -526,6 +526,41 @@ function StudentDetail() {
           </li>
         ))}
       </ul>
+      )}
+
+      {tab === "diet" && (
+        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
+          <p className="strng-title text-lg font-bold">Dieta em breve</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            O plano alimentar deste aluno será montado aqui. Por enquanto, use o campo de feedback
+            para orientações nutricionais.
+          </p>
+        </div>
+      )}
+
+      {tab === "checkins" && (
+        <ul className="space-y-2">
+          {(data?.checkins ?? []).length === 0 && (
+            <li className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              Nenhum check-in enviado por este aluno.
+            </li>
+          )}
+          {(data?.checkins ?? []).map((c) => (
+            <li key={c.id} className="rounded-lg border border-border bg-card p-4 text-sm">
+              <p className="text-xs text-muted-foreground">
+                {new Date(c.created_at).toLocaleDateString("pt-BR")}
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <Box label="Sono" value={`${c.sleep_quality ?? "-"}`} />
+                <Box label="Energia" value={`${c.energy ?? "-"}`} />
+                <Box label="Dores" value={`${c.soreness ?? "-"}`} />
+                <Box label="Dieta" value={`${c.diet_adherence ?? "-"}`} />
+              </div>
+              {c.notes && <p className="mt-2 rounded-md bg-muted p-2 text-xs">{c.notes}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   );
 }
