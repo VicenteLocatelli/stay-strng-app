@@ -65,7 +65,7 @@ function StudentDetail() {
   const { data } = useQuery({
     queryKey: ["coach-student", studentId],
     queryFn: async () => {
-      const [profile, sessions, workouts, points, measurements, feedbacks, exercises] =
+      const [profile, sessions, workouts, points, measurements, feedbacks, exercises, checkins] =
         await Promise.all([
           supabase.from("profiles").select("*").eq("id", studentId).maybeSingle(),
           supabase
