@@ -146,6 +146,29 @@ function CoachDashboard() {
         {students.length ? (totalSessions / students.length).toFixed(1) : "0"} por aluno.
       </p>
 
+      <section className="mt-6 grid gap-3 sm:grid-cols-2">
+        <LiveCard
+          title="TREINANDO AGORA"
+          accent="primary"
+          empty="Ninguém treinando neste momento."
+          items={trainingNow.map((s) => ({
+            id: s.student_id,
+            name: nameOf(s.student_id),
+            detail: `${s.workout_name} · desde ${new Date(s.started_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+          }))}
+        />
+        <LiveCard
+          title="TREINARAM HOJE"
+          accent="gold"
+          empty="Nenhum treino concluído hoje."
+          items={trainedToday.map((s) => ({
+            id: s.student_id,
+            name: nameOf(s.student_id),
+            detail: `${s.workout_name} · ${new Date(s.completed_at!).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+          }))}
+        />
+      </section>
+
       <section className="mt-8 grid gap-3 sm:grid-cols-2">
         <Highlight
           title="ALUNO DA SEMANA"
