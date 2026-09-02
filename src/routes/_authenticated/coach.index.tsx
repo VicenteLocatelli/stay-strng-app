@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Users, Activity, DollarSign, TrendingUp, Crown, PartyPopper } from "lucide-react";
+import { AlertTriangle, Users, Activity, DollarSign, TrendingUp, Crown, PartyPopper, CheckCircle2, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-strng";
 import { weekKey } from "@/lib/strng";
@@ -32,7 +32,7 @@ function CoachDashboard() {
         .eq("active", true);
 
       const ids = (links ?? []).map((l) => l.student_id);
-      const [profilesRes, sessionsRes, pointsRes] = await Promise.all([
+      const [profilesRes, sessionsRes, pointsRes, activeRes] = await Promise.all([
         ids.length
           ? supabase.from("profiles").select("id,full_name,weekly_target,plan,plan_price").in("id", ids)
           : Promise.resolve({ data: [] as { id: string; full_name: string; weekly_target: number; plan: string; plan_price: number }[] }),
@@ -47,6 +47,14 @@ function CoachDashboard() {
         ids.length
           ? supabase.from("points_transactions").select("student_id,points,created_at").in("student_id", ids)
           : Promise.resolve({ data: [] as { student_id: string; points: number; created_at: string }[] }),
+        ids.length
+          ? supabase
+              .from("workout_sessions")
+              .select("id,student_id,workout_name,started_at")
+              .in("student_id", ids)
+              .eq("status", "in_progress")
+              .order("started_at", { ascending: false })
+          : Promise.resolve({ data: [] as { id: string; student_id: string; workout_name: string; started_at: string }[] }),
       ]);
 
       return {
@@ -54,8 +62,10 @@ function CoachDashboard() {
         profiles: profilesRes.data ?? [],
         sessions: sessionsRes.data ?? [],
         points: pointsRes.data ?? [],
+        active: activeRes.data ?? [],
       };
     },
+    refetchInterval: 60_000,
   });
 
   const now = new Date();
@@ -114,6 +124,14 @@ function CoachDashboard() {
   const starWeek = byWeek[0]?.weekPoints ? byWeek[0] : null;
   const starMonth = byMonth[0]?.monthPoints ? byMonth[0] : null;
 
+  const nameOf = (id: string) =>
+    (data?.profiles ?? []).find((p) => p.id === id)?.full_name || "Aluno";
+  const trainingNow = data?.active ?? [];
+  const todayKey = new Date().toDateString();
+  const trainedToday = (data?.sessions ?? []).filter(
+    (s) => s.completed_at && new Date(s.completed_at).toDateString() === todayKey,
+  );
+
   return (
     <main className="mx-auto w-full max-w-4xl px-5 pt-8 pb-10">
       <h1 className="text-3xl font-bold">Painel</h1>
@@ -135,6 +153,29 @@ function CoachDashboard() {
         Evolução geral: {totalSessions} treinos registrados pela carteira · média de{" "}
         {students.length ? (totalSessions / students.length).toFixed(1) : "0"} por aluno.
       </p>
+
+      <section className="mt-6 grid gap-3 sm:grid-cols-2">
+        <LiveCard
+          title="TREINANDO AGORA"
+          accent="primary"
+          empty="Ninguém treinando neste momento."
+          items={trainingNow.map((s) => ({
+            id: s.student_id,
+            name: nameOf(s.student_id),
+            detail: `${s.workout_name} · desde ${new Date(s.started_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+          }))}
+        />
+        <LiveCard
+          title="TREINARAM HOJE"
+          accent="gold"
+          empty="Nenhum treino concluído hoje."
+          items={trainedToday.map((s) => ({
+            id: s.student_id,
+            name: nameOf(s.student_id),
+            detail: `${s.workout_name} · ${new Date(s.completed_at!).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+          }))}
+        />
+      </section>
 
       <section className="mt-8 grid gap-3 sm:grid-cols-2">
         <Highlight
@@ -238,6 +279,47 @@ function CoachDashboard() {
         ))}
       </ul>
     </main>
+  );
+}
+
+function LiveCard({
+  title,
+  accent,
+  items,
+  empty,
+}: {
+  title: string;
+  accent: "primary" | "gold";
+  items: { id: string; name: string; detail: string }[];
+  empty: string;
+}) {
+  const color = accent === "gold" ? "text-gold" : "text-primary";
+  const border = accent === "gold" ? "border-gold/40" : "border-primary/40";
+  return (
+    <div className={`rounded-xl border ${border} bg-card p-4`}>
+      <p className={`strng-title flex items-center gap-2 text-xs font-bold tracking-widest ${color}`}>
+        {accent === "gold" ? <CheckCircle2 className="h-4 w-4" /> : <Flame className="h-4 w-4" />}
+        {title} ({items.length})
+      </p>
+      {items.length === 0 ? (
+        <p className="mt-3 text-xs text-muted-foreground">{empty}</p>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {items.map((i) => (
+            <li key={`${i.id}-${i.detail}`}>
+              <Link
+                to="/coach/students/$studentId"
+                params={{ studentId: i.id }}
+                className="block rounded-lg border border-border p-2 text-sm transition hover:border-primary"
+              >
+                <span className="font-semibold">{i.name}</span>
+                <span className="block text-xs text-muted-foreground">{i.detail}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
