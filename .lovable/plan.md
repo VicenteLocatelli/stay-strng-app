@@ -13,6 +13,9 @@ Cada card da lista de exercícios ganha botão **Editar**, que abre o mesmo form
 
 ## 3. Dieta completa + feedbacks
 
+**Base na planilha Plan-Diet:**
+- Você envia o arquivo `.xlsx` da Plan-Diet aqui no chat; eu extraio a estrutura completa (abas, fórmulas de TMB, fatores de atividade, distribuição de macros, divisão por refeições e lista de alimentos) e espelho essa lógica exatamente no app — sem simplificações.
+
 **No painel do coach (aba Dieta do aluno):**
 - Calculadora: TMB por **Mifflin-St Jeor, Harris-Benedict revisado, Katch-McArdle e Tinsley** (o coach escolhe o método), fator de atividade, ajuste de objetivo (déficit/manutenção/superávit) e **gasto energético diário** resultante.
 - Distribuição de macros (proteína/carboidrato/gordura) por gramas, g/kg e % das calorias, com validação contra o total.
