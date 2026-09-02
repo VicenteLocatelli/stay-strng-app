@@ -32,7 +32,7 @@ function CoachDashboard() {
         .eq("active", true);
 
       const ids = (links ?? []).map((l) => l.student_id);
-      const [profilesRes, sessionsRes, pointsRes] = await Promise.all([
+      const [profilesRes, sessionsRes, pointsRes, activeRes] = await Promise.all([
         ids.length
           ? supabase.from("profiles").select("id,full_name,weekly_target,plan,plan_price").in("id", ids)
           : Promise.resolve({ data: [] as { id: string; full_name: string; weekly_target: number; plan: string; plan_price: number }[] }),
