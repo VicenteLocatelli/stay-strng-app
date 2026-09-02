@@ -282,6 +282,47 @@ function CoachDashboard() {
   );
 }
 
+function LiveCard({
+  title,
+  accent,
+  items,
+  empty,
+}: {
+  title: string;
+  accent: "primary" | "gold";
+  items: { id: string; name: string; detail: string }[];
+  empty: string;
+}) {
+  const color = accent === "gold" ? "text-gold" : "text-primary";
+  const border = accent === "gold" ? "border-gold/40" : "border-primary/40";
+  return (
+    <div className={`rounded-xl border ${border} bg-card p-4`}>
+      <p className={`strng-title flex items-center gap-2 text-xs font-bold tracking-widest ${color}`}>
+        {accent === "gold" ? <CheckCircle2 className="h-4 w-4" /> : <Flame className="h-4 w-4" />}
+        {title} ({items.length})
+      </p>
+      {items.length === 0 ? (
+        <p className="mt-3 text-xs text-muted-foreground">{empty}</p>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {items.map((i) => (
+            <li key={`${i.id}-${i.detail}`}>
+              <Link
+                to="/coach/students/$studentId"
+                params={{ studentId: i.id }}
+                className="block rounded-lg border border-border p-2 text-sm transition hover:border-primary"
+              >
+                <span className="font-semibold">{i.name}</span>
+                <span className="block text-xs text-muted-foreground">{i.detail}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function Card({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
