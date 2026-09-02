@@ -47,6 +47,14 @@ function CoachDashboard() {
         ids.length
           ? supabase.from("points_transactions").select("student_id,points,created_at").in("student_id", ids)
           : Promise.resolve({ data: [] as { student_id: string; points: number; created_at: string }[] }),
+        ids.length
+          ? supabase
+              .from("workout_sessions")
+              .select("id,student_id,workout_name,started_at")
+              .in("student_id", ids)
+              .eq("status", "in_progress")
+              .order("started_at", { ascending: false })
+          : Promise.resolve({ data: [] as { id: string; student_id: string; workout_name: string; started_at: string }[] }),
       ]);
 
       return {
@@ -54,8 +62,10 @@ function CoachDashboard() {
         profiles: profilesRes.data ?? [],
         sessions: sessionsRes.data ?? [],
         points: pointsRes.data ?? [],
+        active: activeRes.data ?? [],
       };
     },
+    refetchInterval: 60_000,
   });
 
   const now = new Date();
