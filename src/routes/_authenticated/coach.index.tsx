@@ -124,6 +124,14 @@ function CoachDashboard() {
   const starWeek = byWeek[0]?.weekPoints ? byWeek[0] : null;
   const starMonth = byMonth[0]?.monthPoints ? byMonth[0] : null;
 
+  const nameOf = (id: string) =>
+    (data?.profiles ?? []).find((p) => p.id === id)?.full_name || "Aluno";
+  const trainingNow = data?.active ?? [];
+  const todayKey = new Date().toDateString();
+  const trainedToday = (data?.sessions ?? []).filter(
+    (s) => s.completed_at && new Date(s.completed_at).toDateString() === todayKey,
+  );
+
   return (
     <main className="mx-auto w-full max-w-4xl px-5 pt-8 pb-10">
       <h1 className="text-3xl font-bold">Painel</h1>
