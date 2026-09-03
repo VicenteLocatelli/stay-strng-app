@@ -450,7 +450,7 @@ export type Database = {
           protein_animal_g: number
           protein_veg_g: number
           sodium_mg: number
-          trainer_id: string
+          trainer_id: string | null
           updated_at: string
         }
         Insert: {
@@ -469,7 +469,7 @@ export type Database = {
           protein_animal_g?: number
           protein_veg_g?: number
           sodium_mg?: number
-          trainer_id: string
+          trainer_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -488,7 +488,7 @@ export type Database = {
           protein_animal_g?: number
           protein_veg_g?: number
           sodium_mg?: number
-          trainer_id?: string
+          trainer_id?: string | null
           updated_at?: string
         }
         Relationships: []
