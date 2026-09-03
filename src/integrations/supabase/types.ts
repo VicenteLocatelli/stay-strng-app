@@ -89,6 +89,214 @@ export type Database = {
         }
         Relationships: []
       }
+      diet_feedbacks: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          plan_id: string | null
+          student_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          plan_id?: string | null
+          student_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          plan_id?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_feedbacks_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "diet_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diet_meal_items: {
+        Row: {
+          created_at: string
+          custom_name: string | null
+          food_id: string | null
+          id: string
+          meal_id: string
+          position: number
+          quantity_g: number
+          substitutes: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_name?: string | null
+          food_id?: string | null
+          id?: string
+          meal_id: string
+          position?: number
+          quantity_g?: number
+          substitutes?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_name?: string | null
+          food_id?: string | null
+          id?: string
+          meal_id?: string
+          position?: number
+          quantity_g?: number
+          substitutes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_meal_items_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diet_meal_items_meal_id_fkey"
+            columns: ["meal_id"]
+            isOneToOne: false
+            referencedRelation: "diet_meals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diet_meals: {
+        Row: {
+          created_at: string
+          id: string
+          meal_time: string | null
+          name: string
+          plan_id: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meal_time?: string | null
+          name: string
+          plan_id: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meal_time?: string | null
+          name?: string
+          plan_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_meals_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "diet_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diet_plans: {
+        Row: {
+          activity_factor: number
+          age: number | null
+          body_fat: number | null
+          carbs_pct: number
+          created_at: string
+          deficit_pct: number
+          fat_pct: number
+          fiber_g: number
+          goal: string | null
+          height_cm: number | null
+          id: string
+          kcal_rest: number | null
+          kcal_training: number | null
+          notes: string | null
+          protein_pct: number
+          published_at: string | null
+          rest_days: number
+          sex: string | null
+          status: string
+          student_id: string
+          surplus_pct: number
+          tdee_kcal: number | null
+          tmb_kcal: number | null
+          tmb_method: string
+          trainer_id: string
+          training_days: number
+          updated_at: string
+          weight_kg: number | null
+        }
+        Insert: {
+          activity_factor?: number
+          age?: number | null
+          body_fat?: number | null
+          carbs_pct?: number
+          created_at?: string
+          deficit_pct?: number
+          fat_pct?: number
+          fiber_g?: number
+          goal?: string | null
+          height_cm?: number | null
+          id?: string
+          kcal_rest?: number | null
+          kcal_training?: number | null
+          notes?: string | null
+          protein_pct?: number
+          published_at?: string | null
+          rest_days?: number
+          sex?: string | null
+          status?: string
+          student_id: string
+          surplus_pct?: number
+          tdee_kcal?: number | null
+          tmb_kcal?: number | null
+          tmb_method?: string
+          trainer_id: string
+          training_days?: number
+          updated_at?: string
+          weight_kg?: number | null
+        }
+        Update: {
+          activity_factor?: number
+          age?: number | null
+          body_fat?: number | null
+          carbs_pct?: number
+          created_at?: string
+          deficit_pct?: number
+          fat_pct?: number
+          fiber_g?: number
+          goal?: string | null
+          height_cm?: number | null
+          id?: string
+          kcal_rest?: number | null
+          kcal_training?: number | null
+          notes?: string | null
+          protein_pct?: number
+          published_at?: string | null
+          rest_days?: number
+          sex?: string | null
+          status?: string
+          student_id?: string
+          surplus_pct?: number
+          tdee_kcal?: number | null
+          tmb_kcal?: number | null
+          tmb_method?: string
+          trainer_id?: string
+          training_days?: number
+          updated_at?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       exercise_logs: {
         Row: {
           created_at: string
@@ -222,6 +430,66 @@ export type Database = {
           name?: string
           notes?: string | null
           video_url?: string | null
+        }
+        Relationships: []
+      }
+      foods: {
+        Row: {
+          active: boolean
+          carbs_g: number
+          created_at: string
+          fat_g: number
+          fiber_g: number
+          id: string
+          is_recipe: boolean
+          kcal: number
+          name: string
+          notes: string | null
+          portion_g: number
+          portion_label: string | null
+          protein_animal_g: number
+          protein_veg_g: number
+          sodium_mg: number
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          carbs_g?: number
+          created_at?: string
+          fat_g?: number
+          fiber_g?: number
+          id?: string
+          is_recipe?: boolean
+          kcal?: number
+          name: string
+          notes?: string | null
+          portion_g?: number
+          portion_label?: string | null
+          protein_animal_g?: number
+          protein_veg_g?: number
+          sodium_mg?: number
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          carbs_g?: number
+          created_at?: string
+          fat_g?: number
+          fiber_g?: number
+          id?: string
+          is_recipe?: boolean
+          kcal?: number
+          name?: string
+          notes?: string | null
+          portion_g?: number
+          portion_label?: string | null
+          protein_animal_g?: number
+          protein_veg_g?: number
+          sodium_mg?: number
+          trainer_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -430,6 +698,7 @@ export type Database = {
           created_at: string
           id: string
           next_feedback_at: string | null
+          read_at: string | null
           student_id: string
           trainer_id: string
           updated_at: string
@@ -439,6 +708,7 @@ export type Database = {
           created_at?: string
           id?: string
           next_feedback_at?: string | null
+          read_at?: string | null
           student_id: string
           trainer_id: string
           updated_at?: string
@@ -448,6 +718,7 @@ export type Database = {
           created_at?: string
           id?: string
           next_feedback_at?: string | null
+          read_at?: string | null
           student_id?: string
           trainer_id?: string
           updated_at?: string
@@ -467,6 +738,7 @@ export type Database = {
           source_template_id: string | null
           student_id: string
           trainer_id: string | null
+          update_notice_at: string | null
           version: number
         }
         Insert: {
@@ -481,6 +753,7 @@ export type Database = {
           source_template_id?: string | null
           student_id: string
           trainer_id?: string | null
+          update_notice_at?: string | null
           version?: number
         }
         Update: {
@@ -495,6 +768,7 @@ export type Database = {
           source_template_id?: string | null
           student_id?: string
           trainer_id?: string | null
+          update_notice_at?: string | null
           version?: number
         }
         Relationships: [
