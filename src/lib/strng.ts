@@ -1,10 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const POINTS = {
-  WORKOUT: 100,
-  PHOTO: 50,
-  PERFECT_ORDER: 75,
-  WEEK_TARGET: 200,
+  WORKOUT: 60,
+  PHOTO: 25,
+  PERFECT_ORDER: 40,
+  WEEK_TARGET: 120,
 } as const;
 
 export const SLOGAN = "DON'T CHASE PERFECTION. STAY STRNG.";
@@ -37,11 +37,12 @@ export type LevelRow = { level: number; name: string; min_points: number };
 
 export const FALLBACK_LEVELS: LevelRow[] = [
   { level: 1, name: "START", min_points: 0 },
-  { level: 2, name: "BUILD", min_points: 1000 },
-  { level: 3, name: "GRIND", min_points: 3000 },
-  { level: 4, name: "STRONG", min_points: 6000 },
-  { level: 5, name: "ELITE", min_points: 10000 },
-  { level: 6, name: "UNSTOPPABLE", min_points: 16000 },
+  { level: 2, name: "BUILD", min_points: 1500 },
+  { level: 3, name: "GRIND", min_points: 5000 },
+  { level: 4, name: "STRONG", min_points: 12000 },
+  { level: 5, name: "ELITE", min_points: 25000 },
+  { level: 6, name: "UNSTOPPABLE", min_points: 45000 },
+  { level: 7, name: "LEGEND", min_points: 75000 },
 ];
 
 export function resolveLevel(points: number, levels: LevelRow[]) {
