@@ -11,17 +11,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
-import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
+import { MetricLineChart, type ChartMetric } from "@/components/charts/metric-line-chart";
 import { PrescriptionRow, type PrescriptionPatch } from "./coach.workouts";
 import { EnvFilterChips, filterByEnv, type EnvFilter } from "@/lib/exercise-env";
+import { DietTab } from "@/components/coach/diet-tab";
+
+const MEASURE_METRICS: ChartMetric[] = [
+  { key: "peso", label: "Peso", color: "var(--primary)", unit: "kg" },
+  { key: "gordura", label: "% Gordura", color: "var(--destructive)", unit: "%" },
+  { key: "cintura", label: "Cintura", color: "var(--gold)", unit: "cm" },
+  { key: "quadril", label: "Quadril", color: "var(--muted-foreground)", unit: "cm" },
+  { key: "braco", label: "Braço", color: "#e8e8e8", unit: "cm" },
+  { key: "coxa", label: "Coxa", color: "#8a8f98", unit: "cm" },
+  { key: "peito", label: "Peito", color: "#c9803a", unit: "cm" },
+];
 
 const TABS = [
   { id: "overview", label: "Visão geral" },
@@ -154,9 +157,12 @@ function StudentDetail() {
   const chartData = (data?.measurements ?? []).map((m) => ({
     date: new Date(m.measured_on).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
     peso: m.weight_kg ? Number(m.weight_kg) : null,
+    gordura: m.body_fat ? Number(m.body_fat) : null,
     cintura: m.waist_cm ? Number(m.waist_cm) : null,
-    braço: m.arm_cm ? Number(m.arm_cm) : null,
+    quadril: m.hip_cm ? Number(m.hip_cm) : null,
+    braco: m.arm_cm ? Number(m.arm_cm) : null,
     coxa: m.thigh_cm ? Number(m.thigh_cm) : null,
+    peito: m.chest_cm ? Number(m.chest_cm) : null,
   }));
 
   async function saveProfileConfig(patch: {
