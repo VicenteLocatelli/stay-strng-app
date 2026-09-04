@@ -53,6 +53,30 @@ type MealRow = {
   diet_meal_items: MealItemRow[];
 };
 
+type PlanRow = {
+  id: string;
+  status: string;
+  published_at: string | null;
+  goal: string | null;
+  notes: string | null;
+  weight_kg: number | null;
+  height_cm: number | null;
+  age: number | null;
+  sex: string | null;
+  body_fat: number | null;
+  tmb_method: string;
+  activity_factor: number;
+  training_days: number;
+  rest_days: number;
+  deficit_pct: number;
+  surplus_pct: number;
+  protein_pct: number;
+  carbs_pct: number;
+  fat_pct: number;
+  fiber_g: number;
+  diet_meals?: MealRow[];
+};
+
 const inputCls = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm";
 
 export function DietTab({ studentId, trainerId }: { studentId: string; trainerId: string }) {
@@ -106,9 +130,7 @@ export function DietTab({ studentId, trainerId }: { studentId: string; trainerId
           .limit(1),
       ]);
       return {
-        plan: (plans.data?.[0] ?? null) as (Record<string, unknown> & {
-          diet_meals?: MealRow[];
-        }) | null,
+        plan: (plans.data?.[0] ?? null) as PlanRow | null,
         foods: (foods.data ?? []) as FoodRow[],
         feedbacks: (feedbacks.data ?? []).filter((f) => f.student_id === studentId),
         lastMeasure: lastMeasure.data?.[0] ?? null,
