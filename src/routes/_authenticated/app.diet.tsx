@@ -48,6 +48,19 @@ type Meal = {
   diet_meal_items: MealItem[];
 };
 
+type DietPlan = {
+  id: string;
+  goal: string | null;
+  tmb_method: string;
+  kcal_training: number | null;
+  kcal_rest: number | null;
+  protein_pct: number;
+  carbs_pct: number;
+  fat_pct: number;
+  notes: string | null;
+  diet_meals?: Meal[];
+};
+
 function DietPage() {
   const { data: me } = useProfile();
   const qc = useQueryClient();
@@ -74,9 +87,7 @@ function DietPage() {
           .limit(5),
       ]);
       return {
-        plan: (planRes.data?.[0] ?? null) as (Record<string, unknown> & {
-          diet_meals?: Meal[];
-        }) | null,
+        plan: (planRes.data?.[0] ?? null) as DietPlan | null,
         feedbacks: feedbacksRes.data ?? [],
       };
     },
@@ -106,12 +117,12 @@ function DietPage() {
 
   const targets = useMemo(() => {
     if (!plan) return null;
-    const kcal = Number(plan.kcal_training ?? 0);
+    const kcal = plan.kcal_training ?? 0;
     if (!kcal) return null;
     return {
       kcal,
-      kcalRest: Number(plan.kcal_rest ?? 0),
-      macros: macroGrams(kcal, Number(plan.protein_pct), Number(plan.carbs_pct), Number(plan.fat_pct)),
+      kcalRest: plan.kcal_rest ?? 0,
+      macros: macroGrams(kcal, plan.protein_pct, plan.carbs_pct, plan.fat_pct),
     };
   }, [plan]);
 
@@ -119,7 +130,7 @@ function DietPage() {
     mutationFn: async () => {
       const { error } = await supabase.from("diet_feedbacks").insert({
         student_id: studentId!,
-        plan_id: (plan?.id as string) ?? null,
+        plan_id: plan?.id ?? null,
         content: feedback.trim(),
       });
       if (error) throw error;
@@ -155,7 +166,7 @@ function DietPage() {
         <>
           <section className="mt-6 rounded-2xl border border-gold/40 bg-gradient-to-br from-card to-muted p-5">
             <p className="text-xs font-semibold tracking-[0.25em] text-muted-foreground">
-              {goalLabel(plan.goal as string).toUpperCase()} · {tmbMethodLabel(plan.tmb_method as string)}
+              {goalLabel(plan.goal).toUpperCase()} · {tmbMethodLabel(plan.tmb_method)}
             </p>
             <div className="mt-3 grid grid-cols-2 gap-3 text-center">
               <div className="rounded-lg bg-background/60 p-3">
@@ -209,11 +220,11 @@ function DietPage() {
             )}
           </ul>
 
-          {typeof plan.notes === "string" && plan.notes && (
+          {plan.notes ? (
             <p className="mt-4 rounded-xl bg-muted p-4 text-xs text-muted-foreground">
               Orientações do coach: {plan.notes}
             </p>
-          )}
+          ) : null}
 
           <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
             COMO ESTÁ A DIETA?
