@@ -312,24 +312,14 @@ function BldngPage() {
                 ))}
               </SelectContent>
             </Select>
-            <div className="mt-4 h-44 w-full">
-              {loadSeries.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={loadSeries}>
-                    <CartesianGrid stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={11} />
-                    <YAxis stroke="var(--muted-foreground)" fontSize={11} width={34} domain={["auto", "auto"]} />
-                    <Tooltip
-                      contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
-                    />
-                    <Line type="monotone" dataKey="value" stroke="var(--gold)" strokeWidth={2} dot />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="grid h-full place-items-center text-center text-xs text-muted-foreground">
-                  Faça este exercício em pelo menos dois dias para ver o gráfico.
-                </p>
-              )}
+            <div className="mt-4">
+              <MetricLineChart
+                data={loadSeries}
+                xKey="date"
+                metrics={[{ key: "value", label: "Carga", color: "var(--gold)", unit: "kg" }]}
+                height={176}
+                emptyMessage="Faça este exercício em pelo menos dois dias para ver o gráfico."
+              />
             </div>
           </>
         )}
