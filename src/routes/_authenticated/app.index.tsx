@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Flame, Trophy, Zap, ChevronRight, HeartPulse, UtensilsCrossed, TrendingUp, Play } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Flame, Trophy, Zap, ChevronRight, HeartPulse, UtensilsCrossed, TrendingUp, Play, MessageSquare, Megaphone, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useLevels } from "@/hooks/use-strng";
 import { computeStreak, resolveLevel, weekKey } from "@/lib/strng";
 import { Progress } from "@/components/ui/progress";
 import { WaterTracker } from "@/components/student/water-tracker";
 import { toast } from "sonner";
+
+const NOTICE_KEY = "strng-workout-notice-dismissed";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   head: () => ({
@@ -26,16 +29,20 @@ function StudentHome() {
   const { data: me } = useProfile();
   const { data: levels } = useLevels();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const studentId = me?.userId;
+  const [dismissedNotice, setDismissedNotice] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : window.localStorage.getItem(NOTICE_KEY),
+  );
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-home", studentId],
     enabled: !!studentId,
     queryFn: async () => {
-      const [workouts, sessions, points, measures] = await Promise.all([
+      const [workouts, sessions, points, measures, unreadFeedback] = await Promise.all([
         supabase
           .from("student_workouts")
-          .select("id,name,objective,estimated_minutes,workout_exercises(id,exercises(is_cardio))")
+          .select("id,name,objective,estimated_minutes,update_notice_at,workout_exercises(id,exercises(is_cardio))")
           .eq("student_id", studentId!)
           .eq("active", true)
           .order("created_at"),
@@ -53,12 +60,20 @@ function StudentHome() {
           .not("weight_kg", "is", null)
           .order("measured_on", { ascending: false })
           .limit(1),
+        supabase
+          .from("student_feedbacks")
+          .select("id,content,created_at")
+          .eq("student_id", studentId!)
+          .is("read_at", null)
+          .order("created_at", { ascending: false })
+          .limit(1),
       ]);
       return {
         workouts: workouts.data ?? [],
         sessions: sessions.data ?? [],
         totalPoints: (points.data ?? []).reduce((s, p) => s + (p.points ?? 0), 0),
         weightKg: measures.data?.[0]?.weight_kg ? Number(measures.data[0].weight_kg) : null,
+        unreadFeedback: unreadFeedback.data?.[0] ?? null,
       };
     },
   });
@@ -81,12 +96,65 @@ function StudentHome() {
     (w.workout_exercises ?? []).some((we) => we.exercises?.is_cardio),
   );
 
+  const latestNotice = workouts
+    .map((w) => w.update_notice_at)
+    .filter(Boolean)
+    .sort()
+    .pop() as string | undefined;
+  const showNotice = !!latestNotice && latestNotice !== dismissedNotice;
+
+  function dismissNotice() {
+    if (!latestNotice) return;
+    window.localStorage.setItem(NOTICE_KEY, latestNotice);
+    setDismissedNotice(latestNotice);
+  }
+
+  async function markFeedbackRead(id: string) {
+    await supabase.from("student_feedbacks").update({ read_at: new Date().toISOString() }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["student-home", studentId] });
+  }
+
   return (
     <main className="mx-auto w-full max-w-lg px-5 pt-8">
       <p className="text-xs font-semibold tracking-[0.3em] text-muted-foreground">OLÁ, {firstName.toUpperCase()}</p>
       <h1 className="mt-2 text-3xl leading-tight font-bold">
         What&apos;s your <span className="text-primary">next win?</span>
       </h1>
+
+      {data?.unreadFeedback && (
+        <section className="mt-5 rounded-2xl border border-gold/50 bg-gold/10 p-4">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 shrink-0 text-gold" />
+            <p className="strng-title text-sm font-bold text-gold">NOVO FEEDBACK DO COACH</p>
+          </div>
+          <p className="mt-2 text-sm">{data.unreadFeedback.content}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {new Date(data.unreadFeedback.created_at).toLocaleDateString("pt-BR")}
+          </p>
+          <button
+            type="button"
+            onClick={() => markFeedbackRead(data.unreadFeedback!.id)}
+            className="mt-3 w-full rounded-lg border border-gold/40 py-2 text-xs font-semibold text-gold"
+          >
+            Entendi, marcar como lido
+          </button>
+        </section>
+      )}
+
+      {showNotice && (
+        <section className="mt-5 flex items-start gap-3 rounded-2xl border border-primary/50 bg-primary/10 p-4">
+          <Megaphone className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <p className="strng-title text-sm font-bold text-primary">SEU TREINO FOI ATUALIZADO</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              O coach ajustou sua prescrição. Confira os exercícios antes de treinar.
+            </p>
+          </div>
+          <button type="button" aria-label="Dispensar aviso" onClick={dismissNotice}>
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </section>
+      )}
 
       {/* Meta semanal — bloco premium */}
       <section className="mt-6 rounded-2xl border border-gold/40 bg-gradient-to-br from-card to-muted p-5 shadow-[0_18px_40px_-24px_color-mix(in_oklab,var(--gold)_60%,transparent)]">

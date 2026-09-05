@@ -393,32 +393,14 @@ function StudentDetail() {
         EVOLUÇÃO CORPORAL
       </h2>
       <div className="rounded-xl border border-border bg-card p-4">
-        {chartData.length > 1 ? (
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: 8,
-                  }}
-                />
-                <Line type="monotone" dataKey="peso" stroke="hsl(var(--primary))" strokeWidth={2} />
-                <Line type="monotone" dataKey="cintura" stroke="hsl(var(--gold))" strokeWidth={2} />
-                <Line type="monotone" dataKey="braço" stroke="hsl(var(--muted-foreground))" strokeWidth={2} />
-                <Line type="monotone" dataKey="coxa" stroke="hsl(var(--destructive))" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Registre pelo menos duas medições para ver a evolução comparativa.
-          </p>
-        )}
+        <MetricLineChart
+          data={chartData}
+          xKey="date"
+          metrics={MEASURE_METRICS}
+          height={256}
+          singleDefault="peso"
+          emptyMessage="Registre pelo menos duas medições para ver a evolução comparativa."
+        />
 
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(
@@ -560,15 +542,7 @@ function StudentDetail() {
       </ul>
       )}
 
-      {tab === "diet" && (
-        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
-          <p className="strng-title text-lg font-bold">Dieta em breve</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            O plano alimentar deste aluno será montado aqui. Por enquanto, use o campo de feedback
-            para orientações nutricionais.
-          </p>
-        </div>
-      )}
+      {tab === "diet" && <DietTab studentId={studentId} trainerId={me!.userId} />}
 
       {tab === "checkins" && (
         <ul className="space-y-2">

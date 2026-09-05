@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
-import { Camera, Loader2 } from "lucide-react";
+import { Award, Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useLevels } from "@/hooks/use-strng";
 import { resolveLevel } from "@/lib/strng";
+import { MetricLineChart, type ChartMetric } from "@/components/charts/metric-line-chart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,16 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+
+const MEASURE_METRICS: ChartMetric[] = [
+  { key: "weight_kg", label: "Peso", color: "var(--primary)", unit: "kg" },
+  { key: "body_fat", label: "% Gordura", color: "var(--destructive)", unit: "%" },
+  { key: "waist_cm", label: "Cintura", color: "var(--gold)", unit: "cm" },
+  { key: "hip_cm", label: "Quadril", color: "var(--muted-foreground)", unit: "cm" },
+  { key: "arm_cm", label: "Braço", color: "#e8e8e8", unit: "cm" },
+  { key: "thigh_cm", label: "Coxa", color: "#8a8f98", unit: "cm" },
+  { key: "chest_cm", label: "Peito", color: "#c9803a", unit: "cm" },
+];
 
 export const Route = createFileRoute("/_authenticated/app/bldng")({
   head: () => ({
@@ -48,7 +58,6 @@ function BldngPage() {
   const studentId = me?.userId;
 
   const [measureDraft, setMeasureDraft] = useState<Record<string, string>>({});
-  const [metric, setMetric] = useState<MeasureKey>("weight_kg");
   const [exerciseId, setExerciseId] = useState<string>("");
   const [checkin, setCheckin] = useState({ sleep_quality: "3", energy: "3", soreness: "2", diet_adherence: "3", notes: "" });
   const [fullName, setFullName] = useState<string | null>(null);
@@ -60,7 +69,7 @@ function BldngPage() {
     queryKey: ["bldng", studentId],
     enabled: !!studentId,
     queryFn: async () => {
-      const [measures, points, logs, photos, checkins] = await Promise.all([
+      const [measures, points, logs, photos, checkins, allBadges, myBadges] = await Promise.all([
         supabase.from("body_measurements").select("*").eq("student_id", studentId!).order("measured_on"),
         supabase.from("points_transactions").select("points").eq("student_id", studentId!),
         supabase
@@ -81,6 +90,8 @@ function BldngPage() {
           .eq("student_id", studentId!)
           .order("created_at", { ascending: false })
           .limit(5),
+        supabase.from("achievements").select("id,code,name,description,threshold").order("threshold"),
+        supabase.from("student_achievements").select("achievement_id,earned_at").eq("student_id", studentId!),
       ]);
 
       const signed = await Promise.all(
@@ -96,6 +107,10 @@ function BldngPage() {
         logs: logs.data ?? [],
         photos: signed,
         checkins: checkins.data ?? [],
+        badges: (allBadges.data ?? []).map((b) => ({
+          ...b,
+          earned_at: (myBadges.data ?? []).find((m) => m.achievement_id === b.id)?.earned_at ?? null,
+        })),
       };
     },
   });
@@ -104,13 +119,17 @@ function BldngPage() {
 
   const measureSeries = useMemo(
     () =>
-      (data?.measures ?? [])
-        .filter((m) => m[metric] != null)
-        .map((m) => ({
-          date: new Date(m.measured_on).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
-          value: Number(m[metric]),
-        })),
-    [data?.measures, metric],
+      (data?.measures ?? []).map((m) => ({
+        date: new Date(m.measured_on).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+        weight_kg: m.weight_kg != null ? Number(m.weight_kg) : null,
+        body_fat: m.body_fat != null ? Number(m.body_fat) : null,
+        waist_cm: m.waist_cm != null ? Number(m.waist_cm) : null,
+        hip_cm: m.hip_cm != null ? Number(m.hip_cm) : null,
+        arm_cm: m.arm_cm != null ? Number(m.arm_cm) : null,
+        thigh_cm: m.thigh_cm != null ? Number(m.thigh_cm) : null,
+        chest_cm: m.chest_cm != null ? Number(m.chest_cm) : null,
+      })),
+    [data?.measures],
   );
 
   const exercises = useMemo(() => {
@@ -246,40 +265,49 @@ function BldngPage() {
         <Progress value={level.progress} className="mt-4 h-2" />
       </section>
 
+      {/* Conquistas */}
+      {(data?.badges.length ?? 0) > 0 && (
+        <>
+          <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">CONQUISTAS</h2>
+          <ul className="grid grid-cols-3 gap-2">
+            {(data?.badges ?? []).map((b) => {
+              const earned = !!b.earned_at;
+              return (
+                <li
+                  key={b.id}
+                  title={b.description ?? b.name}
+                  className={`rounded-xl border p-3 text-center ${
+                    earned ? "border-gold/60 bg-gold/10" : "border-border bg-card opacity-45"
+                  }`}
+                >
+                  <Award className={`mx-auto h-5 w-5 ${earned ? "text-gold" : "text-muted-foreground"}`} />
+                  <p className="strng-title mt-1.5 text-[10px] leading-tight font-bold">{b.name}</p>
+                  {b.threshold != null && !earned && (
+                    <p className="mt-0.5 text-[9px] text-muted-foreground">meta: {b.threshold}</p>
+                  )}
+                  {earned && b.earned_at && (
+                    <p className="mt-0.5 text-[9px] text-gold/80">
+                      {new Date(b.earned_at).toLocaleDateString("pt-BR")}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+
       {/* Medidas */}
       <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">PESO E MEDIDAS</h2>
       <section className="rounded-2xl border border-border bg-card p-5">
-        <Select value={metric} onValueChange={(v) => setMetric(v as MeasureKey)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {MEASURE_FIELDS.map((f) => (
-              <SelectItem key={f.key} value={f.key}>
-                {f.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="mt-4 h-44 w-full">
-          {measureSeries.length > 1 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={measureSeries}>
-                <CartesianGrid stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={11} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={11} width={34} domain={["auto", "auto"]} />
-                <Tooltip
-                  contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
-                />
-                <Line type="monotone" dataKey="value" stroke="var(--primary)" strokeWidth={2} dot />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="grid h-full place-items-center text-center text-xs text-muted-foreground">
-              Registre pelo menos duas medições para ver o gráfico.
-            </p>
-          )}
-        </div>
+        <MetricLineChart
+          data={measureSeries}
+          xKey="date"
+          metrics={MEASURE_METRICS}
+          height={176}
+          singleDefault="weight_kg"
+          emptyMessage="Registre pelo menos duas medições para ver o gráfico."
+        />
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           {MEASURE_FIELDS.map((f) => (
@@ -322,24 +350,14 @@ function BldngPage() {
                 ))}
               </SelectContent>
             </Select>
-            <div className="mt-4 h-44 w-full">
-              {loadSeries.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={loadSeries}>
-                    <CartesianGrid stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={11} />
-                    <YAxis stroke="var(--muted-foreground)" fontSize={11} width={34} domain={["auto", "auto"]} />
-                    <Tooltip
-                      contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
-                    />
-                    <Line type="monotone" dataKey="value" stroke="var(--gold)" strokeWidth={2} dot />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="grid h-full place-items-center text-center text-xs text-muted-foreground">
-                  Faça este exercício em pelo menos dois dias para ver o gráfico.
-                </p>
-              )}
+            <div className="mt-4">
+              <MetricLineChart
+                data={loadSeries}
+                xKey="date"
+                metrics={[{ key: "value", label: "Carga", color: "var(--gold)", unit: "kg" }]}
+                height={176}
+                emptyMessage="Faça este exercício em pelo menos dois dias para ver o gráfico."
+              />
             </div>
           </>
         )}
