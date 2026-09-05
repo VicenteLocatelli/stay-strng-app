@@ -58,7 +58,6 @@ function BldngPage() {
   const studentId = me?.userId;
 
   const [measureDraft, setMeasureDraft] = useState<Record<string, string>>({});
-  const [metric, setMetric] = useState<MeasureKey>("weight_kg");
   const [exerciseId, setExerciseId] = useState<string>("");
   const [checkin, setCheckin] = useState({ sleep_quality: "3", energy: "3", soreness: "2", diet_adherence: "3", notes: "" });
   const [fullName, setFullName] = useState<string | null>(null);
@@ -114,13 +113,17 @@ function BldngPage() {
 
   const measureSeries = useMemo(
     () =>
-      (data?.measures ?? [])
-        .filter((m) => m[metric] != null)
-        .map((m) => ({
-          date: new Date(m.measured_on).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
-          value: Number(m[metric]),
-        })),
-    [data?.measures, metric],
+      (data?.measures ?? []).map((m) => ({
+        date: new Date(m.measured_on).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+        weight_kg: m.weight_kg != null ? Number(m.weight_kg) : null,
+        body_fat: m.body_fat != null ? Number(m.body_fat) : null,
+        waist_cm: m.waist_cm != null ? Number(m.waist_cm) : null,
+        hip_cm: m.hip_cm != null ? Number(m.hip_cm) : null,
+        arm_cm: m.arm_cm != null ? Number(m.arm_cm) : null,
+        thigh_cm: m.thigh_cm != null ? Number(m.thigh_cm) : null,
+        chest_cm: m.chest_cm != null ? Number(m.chest_cm) : null,
+      })),
+    [data?.measures],
   );
 
   const exercises = useMemo(() => {
