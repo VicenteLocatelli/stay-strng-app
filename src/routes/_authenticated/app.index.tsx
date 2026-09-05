@@ -32,10 +32,10 @@ function StudentHome() {
     queryKey: ["student-home", studentId],
     enabled: !!studentId,
     queryFn: async () => {
-      const [workouts, sessions, points, measures] = await Promise.all([
+      const [workouts, sessions, points, measures, unreadFeedback] = await Promise.all([
         supabase
           .from("student_workouts")
-          .select("id,name,objective,estimated_minutes,workout_exercises(id,exercises(is_cardio))")
+          .select("id,name,objective,estimated_minutes,update_notice_at,workout_exercises(id,exercises(is_cardio))")
           .eq("student_id", studentId!)
           .eq("active", true)
           .order("created_at"),
@@ -53,12 +53,20 @@ function StudentHome() {
           .not("weight_kg", "is", null)
           .order("measured_on", { ascending: false })
           .limit(1),
+        supabase
+          .from("student_feedbacks")
+          .select("id,content,created_at")
+          .eq("student_id", studentId!)
+          .is("read_at", null)
+          .order("created_at", { ascending: false })
+          .limit(1),
       ]);
       return {
         workouts: workouts.data ?? [],
         sessions: sessions.data ?? [],
         totalPoints: (points.data ?? []).reduce((s, p) => s + (p.points ?? 0), 0),
         weightKg: measures.data?.[0]?.weight_kg ? Number(measures.data[0].weight_kg) : null,
+        unreadFeedback: unreadFeedback.data?.[0] ?? null,
       };
     },
   });
