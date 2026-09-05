@@ -265,6 +265,38 @@ function BldngPage() {
         <Progress value={level.progress} className="mt-4 h-2" />
       </section>
 
+      {/* Conquistas */}
+      {(data?.badges.length ?? 0) > 0 && (
+        <>
+          <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">CONQUISTAS</h2>
+          <ul className="grid grid-cols-3 gap-2">
+            {(data?.badges ?? []).map((b) => {
+              const earned = !!b.earned_at;
+              return (
+                <li
+                  key={b.id}
+                  title={b.description ?? b.name}
+                  className={`rounded-xl border p-3 text-center ${
+                    earned ? "border-gold/60 bg-gold/10" : "border-border bg-card opacity-45"
+                  }`}
+                >
+                  <Award className={`mx-auto h-5 w-5 ${earned ? "text-gold" : "text-muted-foreground"}`} />
+                  <p className="strng-title mt-1.5 text-[10px] leading-tight font-bold">{b.name}</p>
+                  {b.threshold != null && !earned && (
+                    <p className="mt-0.5 text-[9px] text-muted-foreground">meta: {b.threshold}</p>
+                  )}
+                  {earned && b.earned_at && (
+                    <p className="mt-0.5 text-[9px] text-gold/80">
+                      {new Date(b.earned_at).toLocaleDateString("pt-BR")}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+
       {/* Medidas */}
       <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">PESO E MEDIDAS</h2>
       <section className="rounded-2xl border border-border bg-card p-5">
