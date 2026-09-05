@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Flame, Trophy, Zap, ChevronRight, HeartPulse, UtensilsCrossed, TrendingUp, Play } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Flame, Trophy, Zap, ChevronRight, HeartPulse, UtensilsCrossed, TrendingUp, Play, MessageSquare, Megaphone, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useLevels } from "@/hooks/use-strng";
 import { computeStreak, resolveLevel, weekKey } from "@/lib/strng";
 import { Progress } from "@/components/ui/progress";
 import { WaterTracker } from "@/components/student/water-tracker";
 import { toast } from "sonner";
+
+const NOTICE_KEY = "strng-workout-notice-dismissed";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   head: () => ({
@@ -26,7 +29,11 @@ function StudentHome() {
   const { data: me } = useProfile();
   const { data: levels } = useLevels();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const studentId = me?.userId;
+  const [dismissedNotice, setDismissedNotice] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : window.localStorage.getItem(NOTICE_KEY),
+  );
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-home", studentId],
