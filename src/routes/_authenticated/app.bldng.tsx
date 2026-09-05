@@ -69,7 +69,7 @@ function BldngPage() {
     queryKey: ["bldng", studentId],
     enabled: !!studentId,
     queryFn: async () => {
-      const [measures, points, logs, photos, checkins] = await Promise.all([
+      const [measures, points, logs, photos, checkins, allBadges, myBadges] = await Promise.all([
         supabase.from("body_measurements").select("*").eq("student_id", studentId!).order("measured_on"),
         supabase.from("points_transactions").select("points").eq("student_id", studentId!),
         supabase
@@ -90,6 +90,8 @@ function BldngPage() {
           .eq("student_id", studentId!)
           .order("created_at", { ascending: false })
           .limit(5),
+        supabase.from("achievements").select("id,code,name,description,threshold").order("threshold"),
+        supabase.from("student_achievements").select("achievement_id,earned_at").eq("student_id", studentId!),
       ]);
 
       const signed = await Promise.all(
@@ -105,6 +107,10 @@ function BldngPage() {
         logs: logs.data ?? [],
         photos: signed,
         checkins: checkins.data ?? [],
+        badges: (allBadges.data ?? []).map((b) => ({
+          ...b,
+          earned_at: (myBadges.data ?? []).find((m) => m.achievement_id === b.id)?.earned_at ?? null,
+        })),
       };
     },
   });
