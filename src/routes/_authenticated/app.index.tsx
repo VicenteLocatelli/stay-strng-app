@@ -96,6 +96,24 @@ function StudentHome() {
     (w.workout_exercises ?? []).some((we) => we.exercises?.is_cardio),
   );
 
+  const latestNotice = workouts
+    .map((w) => w.update_notice_at)
+    .filter(Boolean)
+    .sort()
+    .pop() as string | undefined;
+  const showNotice = !!latestNotice && latestNotice !== dismissedNotice;
+
+  function dismissNotice() {
+    if (!latestNotice) return;
+    window.localStorage.setItem(NOTICE_KEY, latestNotice);
+    setDismissedNotice(latestNotice);
+  }
+
+  async function markFeedbackRead(id: string) {
+    await supabase.from("student_feedbacks").update({ read_at: new Date().toISOString() }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["student-home", studentId] });
+  }
+
   return (
     <main className="mx-auto w-full max-w-lg px-5 pt-8">
       <p className="text-xs font-semibold tracking-[0.3em] text-muted-foreground">OLÁ, {firstName.toUpperCase()}</p>
