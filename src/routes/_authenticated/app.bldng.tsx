@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
-import { Camera, Loader2 } from "lucide-react";
+import { Award, Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useLevels } from "@/hooks/use-strng";
 import { resolveLevel } from "@/lib/strng";
+import { MetricLineChart, type ChartMetric } from "@/components/charts/metric-line-chart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,16 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+
+const MEASURE_METRICS: ChartMetric[] = [
+  { key: "weight_kg", label: "Peso", color: "var(--primary)", unit: "kg" },
+  { key: "body_fat", label: "% Gordura", color: "var(--destructive)", unit: "%" },
+  { key: "waist_cm", label: "Cintura", color: "var(--gold)", unit: "cm" },
+  { key: "hip_cm", label: "Quadril", color: "var(--muted-foreground)", unit: "cm" },
+  { key: "arm_cm", label: "Braço", color: "#e8e8e8", unit: "cm" },
+  { key: "thigh_cm", label: "Coxa", color: "#8a8f98", unit: "cm" },
+  { key: "chest_cm", label: "Peito", color: "#c9803a", unit: "cm" },
+];
 
 export const Route = createFileRoute("/_authenticated/app/bldng")({
   head: () => ({
