@@ -262,37 +262,14 @@ function BldngPage() {
       {/* Medidas */}
       <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">PESO E MEDIDAS</h2>
       <section className="rounded-2xl border border-border bg-card p-5">
-        <Select value={metric} onValueChange={(v) => setMetric(v as MeasureKey)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {MEASURE_FIELDS.map((f) => (
-              <SelectItem key={f.key} value={f.key}>
-                {f.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="mt-4 h-44 w-full">
-          {measureSeries.length > 1 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={measureSeries}>
-                <CartesianGrid stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={11} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={11} width={34} domain={["auto", "auto"]} />
-                <Tooltip
-                  contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
-                />
-                <Line type="monotone" dataKey="value" stroke="var(--primary)" strokeWidth={2} dot />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="grid h-full place-items-center text-center text-xs text-muted-foreground">
-              Registre pelo menos duas medições para ver o gráfico.
-            </p>
-          )}
-        </div>
+        <MetricLineChart
+          data={measureSeries}
+          xKey="date"
+          metrics={MEASURE_METRICS}
+          height={176}
+          singleDefault="weight_kg"
+          emptyMessage="Registre pelo menos duas medições para ver o gráfico."
+        />
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           {MEASURE_FIELDS.map((f) => (
