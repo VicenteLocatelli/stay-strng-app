@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-strng";
-import { POINTS, formatDuration, loadHint } from "@/lib/strng";
+import { POINTS, awardConsistencyBadges, formatDuration, loadHint } from "@/lib/strng";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,7 +56,14 @@ function TrainPage() {
   const [startedAt] = useState(() => Date.now());
   const [elapsed, setElapsed] = useState(0);
   const [current, setCurrent] = useState(0);
-  const [mode, setMode] = useState<"focus" | "list">("focus");
+  const [mode, setModeState] = useState<"focus" | "list">(() => {
+    if (typeof window === "undefined") return "focus";
+    return window.localStorage.getItem("strng-train-mode") === "list" ? "list" : "focus";
+  });
+  const setMode = (m: "focus" | "list") => {
+    setModeState(m);
+    window.localStorage.setItem("strng-train-mode", m);
+  };
   const [executionOrder, setExecutionOrder] = useState<string[]>([]);
   const [logs, setLogs] = useState<Record<string, SetLog[]>>({});
   const [rest, setRest] = useState<number | null>(null);
@@ -235,6 +242,11 @@ function TrainPage() {
 
     setFinishing(false);
     setSummary({ points, perfectOrder, sets: totalSets, volume, duration, sessionId });
+
+    const newBadges = await awardConsistencyBadges(me.userId).catch(() => [] as string[]);
+    for (const name of newBadges) {
+      toast.success(`Conquista desbloqueada: ${name}!`, { duration: 6000 });
+    }
   }
 
   async function uploadPhoto(file: File) {
@@ -281,7 +293,11 @@ function TrainPage() {
     setSummary({ ...summary, points: summary.points + POINTS.PHOTO });
     setPhotoSent(true);
     setUploading(false);
-    toast.success("Foto enviada! +50 STRNG points");
+    toast.success(`Foto enviada! +${POINTS.PHOTO} STRNG points`);
+    const newBadges = await awardConsistencyBadges(me.userId).catch(() => [] as string[]);
+    for (const name of newBadges) {
+      toast.success(`Conquista desbloqueada: ${name}!`, { duration: 6000 });
+    }
   }
 
   if (summary) {
