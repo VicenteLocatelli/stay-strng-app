@@ -235,12 +235,21 @@ function StudentDetail() {
     refresh();
   }
 
+  /** Marca o treino como atualizado para o aluno ver o aviso na Home. */
+  async function markUpdated(workoutId: string) {
+    await supabase
+      .from("student_workouts")
+      .update({ update_notice_at: new Date().toISOString() })
+      .eq("id", workoutId);
+  }
+
   async function createWorkout() {
     if (!newWorkout.trim()) return;
     const { error } = await supabase.from("student_workouts").insert({
       student_id: studentId,
       trainer_id: me!.userId,
       name: newWorkout.trim(),
+      update_notice_at: new Date().toISOString(),
     });
     if (error) {
       toast.error(error.message);
@@ -256,22 +265,39 @@ function StudentDetail() {
       .from("workout_exercises")
       .insert({ student_workout_id: workoutId, exercise_id: exerciseId, position });
     if (error) toast.error(error.message);
-    else refresh();
+    else {
+      await markUpdated(workoutId);
+      refresh();
+    }
   }
 
   async function updateExercise(id: string, patch: PrescriptionPatch) {
     const { error } = await supabase.from("workout_exercises").update(patch).eq("id", id);
     if (error) toast.error(error.message);
     else {
+      const { data: row } = await supabase
+        .from("workout_exercises")
+        .select("student_workout_id")
+        .eq("id", id)
+        .maybeSingle();
+      if (row) await markUpdated(row.student_workout_id);
       toast.success("Prescrição atualizada.");
       refresh();
     }
   }
 
   async function removeExercise(id: string) {
+    const { data: row } = await supabase
+      .from("workout_exercises")
+      .select("student_workout_id")
+      .eq("id", id)
+      .maybeSingle();
     const { error } = await supabase.from("workout_exercises").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else refresh();
+    else {
+      if (row) await markUpdated(row.student_workout_id);
+      refresh();
+    }
   }
 
   return (
