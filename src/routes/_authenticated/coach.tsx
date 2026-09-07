@@ -86,6 +86,15 @@ function CoachLayout() {
               </li>
             );
           })}
+          <li className="flex-1">
+            <button
+              onClick={signOut}
+              className="flex w-full flex-col items-center gap-1 py-3 text-[10px] font-semibold text-muted-foreground"
+            >
+              <LogOut className="h-5 w-5" />
+              Sair
+            </button>
+          </li>
         </ul>
       </nav>
     </div>
