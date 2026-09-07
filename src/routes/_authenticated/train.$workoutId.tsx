@@ -87,7 +87,7 @@ function TrainPage() {
       const { data, error } = await supabase
         .from("student_workouts")
         .select(
-          "id,name,objective,notes,workout_exercises(id,position,sets,rep_range,recommended_load,cadence,rest_seconds,technique,notes,exercise_id,exercises(name,muscle_group,execution,common_mistakes,image_url,video_url,is_cardio))",
+          "id,name,objective,notes,workout_exercises(id,position,sets,rep_range,recommended_load,rest_seconds,technique,notes,exercise_id,exercises(name,muscle_group,execution,common_mistakes,image_url,video_url,is_cardio))",
         )
         .eq("id", workoutId)
         .maybeSingle();
@@ -489,7 +489,7 @@ type WeRow = {
   sets: number;
   rep_range: string | null;
   recommended_load: string | null;
-  cadence: string | null;
+  
   rest_seconds: number;
   technique: string | null;
   notes: string | null;
@@ -552,7 +552,7 @@ function ExerciseCard({
         {!cardio && we.rep_range && <Chip label={`${we.rep_range} reps`} />}
         {we.recommended_load && <Chip label={`Carga: ${we.recommended_load}`} highlight />}
         {hint && <Chip label={`Intensidade ${hint}`} highlight />}
-        {we.cadence && <Chip label={`Cadência ${we.cadence}`} />}
+        
         <Chip label={`Descanso ${we.rest_seconds}s`} />
       </div>
 
