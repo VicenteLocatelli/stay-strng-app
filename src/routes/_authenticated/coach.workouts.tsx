@@ -32,7 +32,6 @@ export type PrescriptionPatch = {
   sets: number;
   rep_range: string | null;
   recommended_load: string | null;
-  cadence: string | null;
   rest_seconds: number;
 };
 
@@ -430,7 +429,6 @@ export function PrescriptionRow({
     sets: number;
     rep_range: string | null;
     recommended_load: string | null;
-    cadence: string | null;
     rest_seconds: number;
   };
   name: string;
@@ -441,7 +439,6 @@ export function PrescriptionRow({
     sets: String(row.sets ?? 3),
     rep_range: row.rep_range ?? "",
     recommended_load: row.recommended_load ?? "",
-    cadence: row.cadence ?? "",
     rest_seconds: String(row.rest_seconds ?? 90),
   });
 
@@ -453,7 +450,7 @@ export function PrescriptionRow({
           <Trash2 className="h-4 w-4 text-destructive" />
         </button>
       </div>
-      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Mini label="Séries" value={form.sets} onChange={(v) => setForm({ ...form, sets: v })} />
         <Mini label="Reps" value={form.rep_range} onChange={(v) => setForm({ ...form, rep_range: v })} />
         <Mini
@@ -461,7 +458,6 @@ export function PrescriptionRow({
           value={form.recommended_load}
           onChange={(v) => setForm({ ...form, recommended_load: v })}
         />
-        <Mini label="Cadência" value={form.cadence} onChange={(v) => setForm({ ...form, cadence: v })} />
         <Mini
           label="Descanso (s)"
           value={form.rest_seconds}
@@ -477,7 +473,7 @@ export function PrescriptionRow({
             sets: Number(form.sets) || 1,
             rep_range: form.rep_range || null,
             recommended_load: form.recommended_load || null,
-            cadence: form.cadence || null,
+            
             rest_seconds: Number(form.rest_seconds) || 60,
           })
         }
