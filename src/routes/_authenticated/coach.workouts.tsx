@@ -32,7 +32,6 @@ export type PrescriptionPatch = {
   sets: number;
   rep_range: string | null;
   recommended_load: string | null;
-  cadence: string | null;
   rest_seconds: number;
 };
 
@@ -430,7 +429,6 @@ export function PrescriptionRow({
     sets: number;
     rep_range: string | null;
     recommended_load: string | null;
-    cadence: string | null;
     rest_seconds: number;
   };
   name: string;
@@ -441,7 +439,6 @@ export function PrescriptionRow({
     sets: String(row.sets ?? 3),
     rep_range: row.rep_range ?? "",
     recommended_load: row.recommended_load ?? "",
-    cadence: row.cadence ?? "",
     rest_seconds: String(row.rest_seconds ?? 90),
   });
 
