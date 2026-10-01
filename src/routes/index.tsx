@@ -2,6 +2,10 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { SLOGAN } from "@/lib/strng";
 import { PLANS, formatBRL } from "@/lib/plans";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+const PIX_KEY = "vicente.locatelli@gmail.com";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -109,8 +113,8 @@ function Landing() {
                     : "border border-border text-foreground hover:border-primary"
                 }`}
               >
-                Começar agora
-              </Link>
+                Contratar via PIX
+              </a>
             </li>
           ))}
         </ul>
