@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-strng";
@@ -51,6 +51,7 @@ function StudentDetail() {
   const { studentId } = Route.useParams();
   const { data: me } = useProfile();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [feedback, setFeedback] = useState("");
   const [newWorkout, setNewWorkout] = useState("");
   const [tab, setTab] = useState<TabId>("overview");
@@ -311,6 +312,29 @@ function StudentDetail() {
         {formatBRL(Number(profile?.plan_price ?? 0))}/mês
       </p>
 
+      <Button
+        size="sm"
+        variant="outline"
+        className="mt-3 border-destructive/50 text-destructive"
+        onClick={async () => {
+          if (!confirm("Remover este aluno da consultoria? Ele deixará de aparecer na sua lista.")) return;
+          const { error } = await supabase
+            .from("trainer_students")
+            .delete()
+            .eq("student_id", studentId)
+            .eq("trainer_id", me!.userId);
+          if (error) {
+            toast.error("Não foi possível remover o aluno.");
+            return;
+          }
+          toast.success("Aluno removido da consultoria.");
+          qc.invalidateQueries({ queryKey: ["coach-students"] });
+          navigate({ to: "/coach/students" });
+        }}
+      >
+        <Trash2 className="mr-1 h-4 w-4" /> Remover aluno
+      </Button>
+
       <section className="mt-6 grid grid-cols-4 gap-3 text-center">
         <Box label="Semana" value={`${week}/${target}`} />
         <Box label="Streak" value={`${streak.current}s`} />
@@ -479,8 +503,34 @@ function StudentDetail() {
           const rows = [...(w.workout_exercises ?? [])].sort((a, b) => a.position - b.position);
           return (
             <li key={w.id} className="rounded-xl border border-border bg-card p-4">
-              <p className="strng-title font-bold">{w.name}</p>
-              <p className="text-xs text-muted-foreground">{w.objective}</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input
+                  className="strng-title font-bold"
+                  defaultValue={w.name}
+                  aria-label="Nome do treino"
+                  onBlur={async (e) => {
+                    const v = e.target.value.trim();
+                    if (!v || v === w.name) return;
+                    await supabase.from("student_workouts").update({ name: v }).eq("id", w.id);
+                    await markUpdated(w.id);
+                    toast.success("Treino atualizado.");
+                    refresh();
+                  }}
+                />
+                <Input
+                  placeholder="Objetivo"
+                  defaultValue={w.objective ?? ""}
+                  aria-label="Objetivo do treino"
+                  onBlur={async (e) => {
+                    const v = e.target.value.trim();
+                    if (v === (w.objective ?? "")) return;
+                    await supabase.from("student_workouts").update({ objective: v || null }).eq("id", w.id);
+                    await markUpdated(w.id);
+                    toast.success("Treino atualizado.");
+                    refresh();
+                  }}
+                />
+              </div>
               <div className="mt-3 space-y-3">
                 {rows.map((r) => (
                   <PrescriptionRow
