@@ -2,6 +2,10 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { SLOGAN } from "@/lib/strng";
 import { PLANS, formatBRL } from "@/lib/plans";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+const PIX_KEY = "vicente.locatelli@gmail.com";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -101,19 +105,42 @@ function Landing() {
                 ))}
               </ul>
 
-              <Link
-                to="/auth"
+              <a
+                href="#pix"
                 className={`strng-title mt-6 inline-flex h-12 items-center justify-center rounded-md text-sm font-bold transition ${
                   plan.highlight
                     ? "bg-primary text-primary-foreground hover:opacity-90"
                     : "border border-border text-foreground hover:border-primary"
                 }`}
               >
-                Começar agora
-              </Link>
+                Contratar via PIX
+              </a>
             </li>
           ))}
         </ul>
+
+        <div id="pix" className="mt-10 rounded-2xl border border-gold/40 bg-card p-6">
+          <p className="strng-title text-sm font-bold tracking-widest text-gold">CONTRATAÇÃO VIA PIX</p>
+          <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+            <li>Escolha seu plano e faça o PIX no valor mensal.</li>
+            <li>
+              Chave PIX (e-mail):{" "}
+              <span className="font-semibold text-foreground">{PIX_KEY}</span>
+            </li>
+            <li>Envie o comprovante ao coach para confirmação.</li>
+            <li>Crie sua conta — o plano é liberado manualmente após a confirmação.</li>
+          </ol>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => {
+              void navigator.clipboard.writeText(PIX_KEY);
+              toast.success("Chave PIX copiada.");
+            }}
+          >
+            Copiar chave PIX
+          </Button>
+        </div>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Link
