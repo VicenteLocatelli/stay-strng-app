@@ -91,6 +91,7 @@ export type Database = {
       }
       diet_feedbacks: {
         Row: {
+          coach_seen_at: string | null
           content: string
           created_at: string
           id: string
@@ -98,6 +99,7 @@ export type Database = {
           student_id: string
         }
         Insert: {
+          coach_seen_at?: string | null
           content: string
           created_at?: string
           id?: string
@@ -105,6 +107,7 @@ export type Database = {
           student_id: string
         }
         Update: {
+          coach_seen_at?: string | null
           content?: string
           created_at?: string
           id?: string

@@ -8,6 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -101,6 +112,41 @@ function TrainPage() {
     [workout],
   );
 
+  // Sobrecarga progressiva: melhor série da última sessão concluída de cada exercício.
+  const exerciseIds = exercises.map((e) => e.exercise_id).sort().join(",");
+  const { data: lastLoads } = useQuery({
+    queryKey: ["last-loads", me?.userId, exerciseIds],
+    enabled: !!me?.userId && exercises.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("exercise_logs")
+        .select("exercise_id,session_id,weight,reps,duration_seconds,created_at,workout_sessions!inner(status)")
+        .eq("student_id", me!.userId)
+        .eq("workout_sessions.status", "completed")
+        .in("exercise_id", exerciseIds.split(","))
+        .order("created_at", { ascending: false })
+        .limit(500);
+      const out: Record<string, string> = {};
+      const lastSession: Record<string, string> = {};
+      const best: Record<string, { w: number; r: number; d: number }> = {};
+      for (const row of data ?? []) {
+        const id = row.exercise_id;
+        if (!id) continue;
+        if (!lastSession[id]) lastSession[id] = row.session_id;
+        if (lastSession[id] !== row.session_id) continue;
+        const cur = best[id];
+        const w = Number(row.weight) || 0;
+        const r = row.reps ?? 0;
+        const d = row.duration_seconds ?? 0;
+        if (!cur || w > cur.w || (w === cur.w && r > cur.r) || d > cur.d) best[id] = { w, r, d };
+      }
+      for (const [id, b] of Object.entries(best)) {
+        out[id] = b.d && !b.w ? `${Math.round(b.d / 60)} min` : `${b.w} kg × ${b.r} reps`;
+      }
+      return out;
+    },
+  });
+
   useEffect(() => {
     const t = setInterval(() => setElapsed(Math.floor((Date.now() - startedAt) / 1000)), 1000);
     return () => clearInterval(t);
@@ -185,6 +231,17 @@ function TrainPage() {
     patchSet(we.id, index, { done: true });
     setExecutionOrder((prev) => (prev.includes(we.id) ? prev : [...prev, we.id]));
     setRest(we.rest_seconds || 60);
+  }
+
+  async function cancelWorkout() {
+    if (sessionId) {
+      await supabase
+        .from("workout_sessions")
+        .update({ status: "cancelled", completed_at: new Date().toISOString() })
+        .eq("id", sessionId);
+    }
+    toast("Treino cancelado.");
+    navigate({ to: "/app" });
   }
 
   async function finishWorkout() {
@@ -343,7 +400,7 @@ function TrainPage() {
           onClick={() => photoInput.current?.click()}
         >
           <Camera className="mr-2 h-4 w-4" />
-          {photoSent ? "Foto enviada ✓" : uploading ? "Enviando..." : "Enviar foto pós-treino (+50)"}
+          {photoSent ? "Foto enviada ✓" : uploading ? "Enviando..." : `Enviar foto pós-treino (+${POINTS.PHOTO})`}
         </Button>
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           Um envio por sessão. Seu treinador vê a foto e o seu feedback.
@@ -368,13 +425,34 @@ function TrainPage() {
 
   return (
     <main className="mx-auto w-full max-w-lg px-5 pt-6 pb-40">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => navigate({ to: "/app" })}
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" /> Sair
-        </button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <button className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <ArrowLeft className="h-4 w-4" /> Sair
+          </button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sair do treino?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você pode cancelar este treino (as séries não contam pontos) ou apenas sair e voltar depois.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continuar treinando</AlertDialogCancel>
+            <Button variant="outline" onClick={() => navigate({ to: "/app" })}>
+              Só sair
+            </Button>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={cancelWorkout}
+            >
+              Cancelar treino
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <div className="-mt-4 flex items-center justify-end">
         <span className="strng-title inline-flex items-center gap-1 text-sm font-bold">
           <Timer className="h-4 w-4 text-primary" /> {formatDuration(elapsed)}
         </span>
@@ -411,6 +489,7 @@ function TrainPage() {
           we={active}
           sets={logs[active.id] ?? []}
           showMedia
+          last={lastLoads?.[active.exercise_id]}
           onPatch={(i, p) => patchSet(active.id, i, p)}
           onConfirm={(i) => confirmSet(active, i, current)}
         />
@@ -423,6 +502,7 @@ function TrainPage() {
               index={idx + 1}
               sets={logs[we.id] ?? []}
               showMedia
+              last={lastLoads?.[we.exercise_id]}
               onPatch={(i, p) => patchSet(we.id, i, p)}
               onConfirm={(i) => confirmSet(we, i, idx)}
             />
@@ -507,6 +587,7 @@ function ExerciseCard({
   sets,
   index,
   showMedia,
+  last,
   onPatch,
   onConfirm,
 }: {
@@ -514,6 +595,7 @@ function ExerciseCard({
   sets: SetLog[];
   index?: number;
   showMedia?: boolean;
+  last?: string | null;
   onPatch: (i: number, patch: Partial<SetLog>) => void;
   onConfirm: (i: number) => void;
 }) {
@@ -552,9 +634,14 @@ function ExerciseCard({
         {!cardio && we.rep_range && <Chip label={`${we.rep_range} reps`} />}
         {we.recommended_load && <Chip label={`Carga: ${we.recommended_load}`} highlight />}
         {hint && <Chip label={`Intensidade ${hint}`} highlight />}
-        
         <Chip label={`Descanso ${we.rest_seconds}s`} />
       </div>
+
+      {last && (
+        <p className="mt-3 rounded-md border border-gold/30 bg-gold/5 px-3 py-2 text-xs text-gold">
+          Último treino: <span className="font-bold">{last}</span>
+        </p>
+      )}
 
       {we.technique && (
         <p className="mt-2 rounded-md bg-muted p-2 text-xs text-muted-foreground">
