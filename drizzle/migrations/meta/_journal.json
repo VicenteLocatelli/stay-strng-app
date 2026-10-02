@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790904760313,
+      "tag": "0000_diet_feedback_coach_seen",
+      "breakpoints": true
+    }
+  ]
+}
