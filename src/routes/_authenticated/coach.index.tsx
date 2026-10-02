@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Salad } from "lucide-react";
 import { AlertTriangle, Users, Activity, DollarSign, TrendingUp, Crown, PartyPopper, CheckCircle2, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-strng";
@@ -154,6 +155,8 @@ function CoachDashboard() {
         Evolução geral: {totalSessions} treinos registrados pela carteira · média de{" "}
         {students.length ? (totalSessions / students.length).toFixed(1) : "0"} por aluno.
       </p>
+
+      <DietFeedbackAlerts />
 
       <section className="mt-6 grid gap-3 sm:grid-cols-2">
         <LiveCard
@@ -365,5 +368,69 @@ function Highlight({
         <p className="mt-2 text-sm text-muted-foreground">Sem pontuação registrada ainda.</p>
       )}
     </div>
+  );
+}
+
+function DietFeedbackAlerts() {
+  const qc = useQueryClient();
+  const { data } = useQuery({
+    queryKey: ["coach-diet-feedbacks"],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data: rows } = await supabase
+        .from("diet_feedbacks")
+        .select("id,student_id,content,created_at")
+        .is("coach_seen_at", null)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      const ids = [...new Set((rows ?? []).map((r) => r.student_id))];
+      const names = ids.length
+        ? ((await supabase.from("profiles").select("id,full_name").in("id", ids)).data ?? [])
+        : [];
+      return (rows ?? []).map((r) => ({
+        ...r,
+        name: names.find((n) => n.id === r.student_id)?.full_name || "Aluno",
+      }));
+    },
+  });
+  if (!data?.length) return null;
+  async function markSeen(id?: string) {
+    const q = supabase.from("diet_feedbacks").update({ coach_seen_at: new Date().toISOString() });
+    await (id ? q.eq("id", id) : q.in("id", data!.map((d) => d.id)));
+    qc.invalidateQueries({ queryKey: ["coach-diet-feedbacks"] });
+  }
+  return (
+    <section className="mt-6 rounded-xl border border-primary/40 bg-primary/5 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="strng-title flex items-center gap-2 text-sm font-bold tracking-widest text-primary">
+          <Salad className="h-4 w-4" /> NOVOS FEEDBACKS DE DIETA ({data.length})
+        </p>
+        <button className="text-xs text-muted-foreground underline" onClick={() => markSeen()}>
+          Marcar todos como vistos
+        </button>
+      </div>
+      <ul className="mt-3 space-y-2">
+        {data.map((f) => (
+          <li key={f.id} className="rounded-lg border border-border bg-card p-3 text-sm">
+            <div className="flex items-center justify-between gap-2">
+              <Link
+                to="/coach/students/$studentId"
+                params={{ studentId: f.student_id }}
+                className="font-semibold hover:text-primary"
+              >
+                {f.name}
+              </Link>
+              <span className="text-[11px] text-muted-foreground">
+                {new Date(f.created_at).toLocaleDateString("pt-BR")}
+              </span>
+            </div>
+            <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">{f.content}</p>
+            <button className="mt-2 text-xs font-semibold text-primary" onClick={() => markSeen(f.id)}>
+              Marcar como visto
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
