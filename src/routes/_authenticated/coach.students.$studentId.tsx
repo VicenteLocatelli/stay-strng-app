@@ -83,10 +83,11 @@ function StudentDetail() {
           supabase
             .from("student_workouts")
             .select(
-              "id,name,objective,active,workout_exercises(id,exercise_id,position,sets,rep_range,recommended_load,cadence,rest_seconds,exercises(name))",
+              "id,name,objective,active,workout_exercises(id,exercise_id,position,sets,rep_range,recommended_load,rest_seconds,exercises(name))",
             )
             .eq("student_id", studentId)
-            .eq("active", true),
+            .order("active", { ascending: false })
+            .order("created_at", { ascending: false }),
           supabase.from("points_transactions").select("points").eq("student_id", studentId),
           supabase
             .from("body_measurements")

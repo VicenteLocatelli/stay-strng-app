@@ -53,6 +53,7 @@ function CoachDashboard() {
               .select("id,student_id,workout_name,started_at")
               .in("student_id", ids)
               .eq("status", "in_progress")
+              .gte("started_at", new Date(Date.now() - 2 * 3600_000).toISOString())
               .order("started_at", { ascending: false })
           : Promise.resolve({ data: [] as { id: string; student_id: string; workout_name: string; started_at: string }[] }),
       ]);

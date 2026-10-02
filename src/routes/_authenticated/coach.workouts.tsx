@@ -42,7 +42,6 @@ type TemplateExercise = {
   sets: number;
   rep_range: string | null;
   recommended_load: string | null;
-  cadence: string | null;
   rest_seconds: number;
   technique: string | null;
   notes: string | null;
@@ -64,7 +63,7 @@ function WorkoutsPage() {
         supabase
           .from("workout_templates")
           .select(
-            "id,trainer_id,name,objective,description,estimated_minutes,template_exercises(id,exercise_id,position,sets,rep_range,recommended_load,cadence,rest_seconds,technique,notes)",
+            "id,trainer_id,name,objective,description,estimated_minutes,template_exercises(id,exercise_id,position,sets,rep_range,recommended_load,rest_seconds,technique,notes)",
           )
           .eq("active", true)
           .order("name"),
@@ -150,7 +149,6 @@ function WorkoutsPage() {
           sets: e.sets,
           rep_range: e.rep_range,
           recommended_load: e.recommended_load,
-          cadence: e.cadence,
           rest_seconds: e.rest_seconds,
           technique: e.technique,
           notes: e.notes,
@@ -205,7 +203,6 @@ function WorkoutsPage() {
           sets: e.sets,
           rep_range: e.rep_range,
           recommended_load: e.recommended_load,
-          cadence: e.cadence,
           rest_seconds: e.rest_seconds,
           technique: e.technique,
           notes: e.notes,
