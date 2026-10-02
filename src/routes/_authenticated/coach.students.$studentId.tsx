@@ -10,11 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Power, PowerOff } from "lucide-react";
 import { MetricLineChart, type ChartMetric } from "@/components/charts/metric-line-chart";
 import { PrescriptionRow, type PrescriptionPatch } from "./coach.workouts";
 import { EnvFilterChips, filterByEnv, type EnvFilter } from "@/lib/exercise-env";
 import { DietTab } from "@/components/coach/diet-tab";
+import { BeforeAfter } from "@/components/coach/before-after";
 
 const MEASURE_METRICS: ChartMetric[] = [
   { key: "peso", label: "Peso", color: "var(--primary)", unit: "kg" },
@@ -32,6 +33,7 @@ const TABS = [
   { id: "history", label: "Histórico" },
   { id: "diet", label: "Dieta" },
   { id: "checkins", label: "Check-ins" },
+  { id: "photos", label: "Antes & Depois" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -503,7 +505,13 @@ function StudentDetail() {
         {(data?.workouts ?? []).map((w) => {
           const rows = [...(w.workout_exercises ?? [])].sort((a, b) => a.position - b.position);
           return (
-            <li key={w.id} className="rounded-xl border border-border bg-card p-4">
+            <li
+              key={w.id}
+              className={`rounded-xl border border-border bg-card p-4 ${w.active ? "" : "opacity-60"}`}
+            >
+              {!w.active && (
+                <p className="mb-2 text-[10px] font-bold tracking-widest text-muted-foreground">INATIVO</p>
+              )}
               <div className="grid gap-2 sm:grid-cols-2">
                 <Input
                   className="strng-title font-bold"
@@ -565,16 +573,33 @@ function StudentDetail() {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
                 <Button
-                  size="icon"
+                  size="sm"
                   variant="outline"
-                  aria-label="Desativar treino"
                   onClick={async () => {
-                    await supabase.from("student_workouts").update({ active: false }).eq("id", w.id);
+                    await supabase.from("student_workouts").update({ active: !w.active }).eq("id", w.id);
+                    toast.success(w.active ? "Treino desativado." : "Treino reativado.");
                     refresh();
                   }}
                 >
-                  <Trash2 className="h-4 w-4 text-destructive" />
+                  {w.active ? <PowerOff className="mr-1 h-4 w-4" /> : <Power className="mr-1 h-4 w-4" />}
+                  {w.active ? "Desativar" : "Reativar"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-destructive/50 text-destructive"
+                  onClick={async () => {
+                    if (!window.confirm(`Excluir "${w.name}" em definitivo? O histórico de treinos concluídos é mantido.`)) return;
+                    const { error } = await supabase.from("student_workouts").delete().eq("id", w.id);
+                    if (error) toast.error("Não foi possível excluir.");
+                    else toast.success("Treino excluído.");
+                    refresh();
+                  }}
+                >
+                  <Trash2 className="mr-1 h-4 w-4" /> Excluir
                 </Button>
               </div>
             </li>
