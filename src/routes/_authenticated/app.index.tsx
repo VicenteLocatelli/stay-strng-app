@@ -8,6 +8,7 @@ import { computeStreak, resolveLevel, weekKey } from "@/lib/strng";
 import { Progress } from "@/components/ui/progress";
 import { WaterTracker } from "@/components/student/water-tracker";
 import { toast } from "sonner";
+import { ProfileMenu } from "@/components/student/profile-menu";
 
 const NOTICE_KEY = "strng-workout-notice-dismissed";
 
@@ -116,10 +117,15 @@ function StudentHome() {
 
   return (
     <main className="mx-auto w-full max-w-lg px-5 pt-8">
-      <p className="text-xs font-semibold tracking-[0.3em] text-muted-foreground">OLÁ, {firstName.toUpperCase()}</p>
-      <h1 className="mt-2 text-3xl leading-tight font-bold">
-        What&apos;s your <span className="text-primary">next win?</span>
-      </h1>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold tracking-[0.3em] text-muted-foreground">OLÁ, {firstName.toUpperCase()}</p>
+          <h1 className="mt-2 text-3xl leading-tight font-bold">
+            What&apos;s your <span className="text-primary">next win?</span>
+          </h1>
+        </div>
+        <ProfileMenu profile={me?.profile} />
+      </div>
 
       {data?.unreadFeedback && (
         <section className="mt-5 rounded-2xl border border-gold/50 bg-gold/10 p-4">
