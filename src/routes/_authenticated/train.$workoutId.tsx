@@ -595,7 +595,7 @@ function ExerciseCard({
   sets: SetLog[];
   index?: number;
   showMedia?: boolean;
-  last?: string | null;
+  last?: string | null | undefined;
   onPatch: (i: number, patch: Partial<SetLog>) => void;
   onConfirm: (i: number) => void;
 }) {

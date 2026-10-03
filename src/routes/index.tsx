@@ -1,3 +1,4 @@
+import { buildPixPayload } from "@/lib/pix";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { SLOGAN } from "@/lib/strng";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const PIX_KEY = "vicente.locatelli@gmail.com";
+const PIX_CODE = buildPixPayload({ key: PIX_KEY, name: "Vicente Locatelli", city: "Sao Paulo" });
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -139,6 +141,19 @@ function Landing() {
             }}
           >
             Copiar chave PIX
+          </Button>
+          <p className="mt-6 text-xs font-bold tracking-widest text-muted-foreground">PIX COPIA E COLA</p>
+          <p className="mt-2 break-all rounded-md border border-border bg-background p-3 font-mono text-[11px] text-muted-foreground">
+            {PIX_CODE}
+          </p>
+          <Button
+            className="strng-title mt-3 w-full font-bold sm:w-auto"
+            onClick={() => {
+              void navigator.clipboard.writeText(PIX_CODE);
+              toast.success("Código PIX copiado. Cole no app do seu banco.");
+            }}
+          >
+            Copiar código PIX
           </Button>
         </div>
 

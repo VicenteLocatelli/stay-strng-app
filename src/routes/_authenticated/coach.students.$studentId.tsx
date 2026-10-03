@@ -488,7 +488,7 @@ function StudentDetail() {
       {tab === "workouts" && (
         <>
       <h2 className="mt-2 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
-        TREINOS ATIVOS E PRESCRIÇÃO
+        TREINOS E PRESCRIÇÃO
       </h2>
       <div className="mb-3 flex gap-2">
         <Input
@@ -645,6 +645,8 @@ function StudentDetail() {
       )}
 
       {tab === "diet" && <DietTab studentId={studentId} trainerId={me!.userId} />}
+
+      {tab === "photos" && <BeforeAfter studentId={studentId} />}
 
       {tab === "checkins" && (
         <ul className="space-y-2">
