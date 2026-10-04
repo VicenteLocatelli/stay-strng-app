@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { StudentDietAssistant } from "@/components/ai/ai-panels";
 
 export const Route = createFileRoute("/_authenticated/app/diet")({
   head: () => ({
@@ -226,6 +227,9 @@ function DietPage() {
             </p>
           ) : null}
 
+          <div className="mt-8">
+            <StudentDietAssistant />
+          </div>
           <h2 className="mt-8 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
             COMO ESTÁ A DIETA?
           </h2>

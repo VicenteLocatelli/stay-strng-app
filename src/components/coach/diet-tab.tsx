@@ -493,6 +493,8 @@ export function DietTab({ studentId, trainerId }: { studentId: string; trainerId
         )}
       </section>
 
+      <AiDietPanel studentId={studentId} onDone={refresh} />
+
       {/* Refeições */}
       <section className="rounded-xl border border-border bg-card p-4">
         <h2 className="text-sm font-bold tracking-widest text-muted-foreground">
