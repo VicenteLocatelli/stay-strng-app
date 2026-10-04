@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-strng";
 import { weekKey } from "@/lib/strng";
 import { formatBRL, planLabel } from "@/lib/plans";
+import { CoachFoodApprovalAlerts } from "@/components/ai/ai-panels";
 
 export const Route = createFileRoute("/_authenticated/coach/")({
   head: () => ({
@@ -156,6 +157,7 @@ function CoachDashboard() {
         {students.length ? (totalSessions / students.length).toFixed(1) : "0"} por aluno.
       </p>
 
+      <CoachFoodApprovalAlerts />
       <DietFeedbackAlerts />
 
       <section className="mt-6 grid gap-3 sm:grid-cols-2">

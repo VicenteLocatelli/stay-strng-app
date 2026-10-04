@@ -16,6 +16,7 @@ import { PrescriptionRow, type PrescriptionPatch } from "./coach.workouts";
 import { EnvFilterChips, filterByEnv, type EnvFilter } from "@/lib/exercise-env";
 import { DietTab } from "@/components/coach/diet-tab";
 import { BeforeAfter } from "@/components/coach/before-after";
+import { AiWorkoutPanel } from "@/components/ai/ai-panels";
 
 const MEASURE_METRICS: ChartMetric[] = [
   { key: "peso", label: "Peso", color: "var(--primary)", unit: "kg" },
@@ -490,6 +491,7 @@ function StudentDetail() {
       <h2 className="mt-2 mb-3 text-sm font-bold tracking-widest text-muted-foreground">
         TREINOS E PRESCRIÇÃO
       </h2>
+      <AiWorkoutPanel studentId={studentId} onDone={refresh} />
       <div className="mb-3 flex gap-2">
         <Input
           placeholder="Nome do novo treino personalizado"
