@@ -300,6 +300,36 @@ export type Database = {
         }
         Relationships: []
       }
+      diet_questions: {
+        Row: {
+          answer: string | null
+          coach_seen_at: string | null
+          created_at: string
+          flagged: boolean
+          id: string
+          question: string
+          student_id: string
+        }
+        Insert: {
+          answer?: string | null
+          coach_seen_at?: string | null
+          created_at?: string
+          flagged?: boolean
+          id?: string
+          question: string
+          student_id: string
+        }
+        Update: {
+          answer?: string | null
+          coach_seen_at?: string | null
+          created_at?: string
+          flagged?: boolean
+          id?: string
+          question?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
       exercise_logs: {
         Row: {
           created_at: string
