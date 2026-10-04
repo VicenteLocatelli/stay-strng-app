@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { AiDietPanel } from "@/components/ai/ai-panels";
 import { Plus, Trash2, CheckCircle2, UtensilsCrossed } from "lucide-react";
 
 type FoodRow = {
