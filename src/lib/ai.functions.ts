@@ -11,7 +11,7 @@ async function callGemini<T>(system: string, prompt: string): Promise<AiResult<T
   const key = process.env["GEMINI_API_KEY"];
   if (!key) return { ok: false, error: NO_KEY };
   const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
     {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
