@@ -109,7 +109,7 @@ export const aiGenerateDiet = createServerFn({ method: "POST" })
       kcal_alvo_treino: plan.kcal_training,
       macros_pct: { proteina: plan.protein_pct, carbo: plan.carbs_pct, gordura: plan.fat_pct },
     };
-    const system = `Você é nutricionista esportivo da consultoria STAY STRNG. Monte cardápios usando SOMENTE alimentos da lista fornecida (formato: indice|nome|porção|kcal|proteína|carbo|gordura por porção). Se kcal alvo estiver vazio, estime pelo peso/objetivo (Mifflin-St Jeor, FA 1.5). Responda JSON: {"meals":[{"name":string,"time":"HH:MM","items":[{"food":indice,"grams":number,"substitutes":string}]}],"kcal_total":number,"notes":string}. Use alimentos comuns brasileiros e quantidades realistas.`;
+    const system = `Você é nutricionista esportivo da consultoria STAY STRNG. Monte cardápios usando SOMENTE alimentos da lista fornecida (formato: indice|nome|kcal|proteína g|carbo g|gordura g, valores por 100 g). Se kcal alvo estiver vazio, estime pelo peso/objetivo (Mifflin-St Jeor, FA 1.5). Responda JSON: {"meals":[{"name":string,"time":"HH:MM","items":[{"food":indice,"grams":number,"substitutes":string}]}],"kcal_total":number,"notes":string}. Use alimentos comuns brasileiros e quantidades realistas.`;
     const prompt = `Dados do aluno: ${JSON.stringify(ctx)}\nNúmero de refeições: ${data.meals}\nInstruções do coach: ${data.instructions || "nenhuma"}\n\nALIMENTOS:\n${foodText}`;
     const ai = await callGemini<{ meals: { name: string; time?: string; items: { food: number; grams: number; substitutes?: string }[] }[]; kcal_total?: number; notes?: string }>(system, prompt);
     if (!ai.ok) return ai;
