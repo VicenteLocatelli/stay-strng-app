@@ -7,7 +7,7 @@ const NO_KEY =
 
 type AiResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
-const GEMINI_MODELS = ["gemini-flash-latest", "gemini-3.8-flash"];
+const GEMINI_MODELS = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-flash-latest"];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function callGemini<T>(system: string, prompt: string): Promise<AiResult<T>> {
@@ -96,7 +96,7 @@ export const aiGenerateDiet = createServerFn({ method: "POST" })
     }
     const list = (foods ?? []);
     const foodText = list
-      .map((f, i) => `${i}|${f.name}|${f.portion_g}g|${f.kcal}kcal|P${Number(f.protein_animal_g) + Number(f.protein_veg_g)}|C${f.carbs_g}|G${f.fat_g}`)
+      .map((f, i) => `${i}|${f.name.slice(0, 40)}|${Math.round(Number(f.kcal))}|${Math.round(Number(f.protein_animal_g) + Number(f.protein_veg_g))}|${Math.round(Number(f.carbs_g))}|${Math.round(Number(f.fat_g))}`)
       .join("\n");
     const ctx = {
       aluno: profile?.full_name,
