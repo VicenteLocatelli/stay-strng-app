@@ -7,26 +7,42 @@ const NO_KEY =
 
 type AiResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
+const GEMINI_MODELS = ["gemini-flash-latest", "gemini-3.8-flash"];
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 async function callGemini<T>(system: string, prompt: string): Promise<AiResult<T>> {
   const key = process.env["GEMINI_API_KEY"];
   if (!key) return { ok: false, error: NO_KEY };
-  const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" },
-      }),
-    },
-  );
-  if (!res.ok) {
-    console.error("Gemini error", res.status, await res.text());
-    if (res.status === 429) return { ok: false, error: "Limite gratuito do Gemini atingido. Tente em alguns minutos." };
-    if (res.status === 400 || res.status === 403) return { ok: false, error: "Chave do Gemini inválida ou sem permissão." };
-    return { ok: false, error: "A IA está indisponível agora. Tente novamente mais tarde." };
+  const body = JSON.stringify({
+    systemInstruction: { parts: [{ text: system }] },
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig: { responseMimeType: "application/json" },
+  });
+  let res: Response | null = null;
+  let lastStatus = 0;
+  outer: for (const model of GEMINI_MODELS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key }, body },
+      );
+      if (res.ok) break outer;
+      lastStatus = res.status;
+      console.error("Gemini error", model, res.status, (await res.text()).slice(0, 300));
+      if (res.status === 400 || res.status === 403) {
+        return { ok: false, error: "Chave do Gemini inválida ou sem permissão." };
+      }
+      if (res.status === 404) break; // tenta o próximo modelo
+      if (res.status === 429 || res.status >= 500) {
+        await sleep(1500 * (attempt + 1) + Math.random() * 500);
+        continue;
+      }
+      break;
+    }
+  }
+  if (!res || !res.ok) {
+    if (lastStatus === 429) return { ok: false, error: "Limite gratuito do Gemini atingido. Tente em alguns minutos." };
+    return { ok: false, error: "O Google Gemini está sobrecarregado agora. Tente novamente em alguns minutos." };
   }
   const json = (await res.json()) as {
     candidates?: { content?: { parts?: { text?: string }[] } }[];
