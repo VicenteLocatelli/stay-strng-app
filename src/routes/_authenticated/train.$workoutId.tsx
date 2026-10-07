@@ -435,14 +435,11 @@ function TrainPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Sair do treino?</AlertDialogTitle>
             <AlertDialogDescription>
-              Você pode cancelar este treino (as séries não contam pontos) ou apenas sair e voltar depois.
+              Se cancelar, as séries deste treino não contam pontos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Continuar treinando</AlertDialogCancel>
-            <Button variant="outline" onClick={() => navigate({ to: "/app" })}>
-              Só sair
-            </Button>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={cancelWorkout}

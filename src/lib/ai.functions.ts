@@ -7,7 +7,7 @@ const NO_KEY =
 
 type AiResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
-const GEMINI_MODELS = ["gemini-flash-latest", "gemini-3.8-flash"];
+const GEMINI_MODELS = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-flash-latest"];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function callGemini<T>(system: string, prompt: string): Promise<AiResult<T>> {
@@ -96,7 +96,7 @@ export const aiGenerateDiet = createServerFn({ method: "POST" })
     }
     const list = (foods ?? []);
     const foodText = list
-      .map((f, i) => `${i}|${f.name}|${f.portion_g}g|${f.kcal}kcal|P${Number(f.protein_animal_g) + Number(f.protein_veg_g)}|C${f.carbs_g}|G${f.fat_g}`)
+      .map((f, i) => `${i}|${f.name.slice(0, 40)}|${Math.round(Number(f.kcal))}|${Math.round(Number(f.protein_animal_g) + Number(f.protein_veg_g))}|${Math.round(Number(f.carbs_g))}|${Math.round(Number(f.fat_g))}`)
       .join("\n");
     const ctx = {
       aluno: profile?.full_name,
@@ -109,7 +109,7 @@ export const aiGenerateDiet = createServerFn({ method: "POST" })
       kcal_alvo_treino: plan.kcal_training,
       macros_pct: { proteina: plan.protein_pct, carbo: plan.carbs_pct, gordura: plan.fat_pct },
     };
-    const system = `Você é nutricionista esportivo da consultoria STAY STRNG. Monte cardápios usando SOMENTE alimentos da lista fornecida (formato: indice|nome|porção|kcal|proteína|carbo|gordura por porção). Se kcal alvo estiver vazio, estime pelo peso/objetivo (Mifflin-St Jeor, FA 1.5). Responda JSON: {"meals":[{"name":string,"time":"HH:MM","items":[{"food":indice,"grams":number,"substitutes":string}]}],"kcal_total":number,"notes":string}. Use alimentos comuns brasileiros e quantidades realistas.`;
+    const system = `Você é nutricionista esportivo da consultoria STAY STRNG. Monte cardápios usando SOMENTE alimentos da lista fornecida (formato: indice|nome|kcal|proteína g|carbo g|gordura g, valores por 100 g). Se kcal alvo estiver vazio, estime pelo peso/objetivo (Mifflin-St Jeor, FA 1.5). Responda JSON: {"meals":[{"name":string,"time":"HH:MM","items":[{"food":indice,"grams":number,"substitutes":string}]}],"kcal_total":number,"notes":string}. Use alimentos comuns brasileiros e quantidades realistas.`;
     const prompt = `Dados do aluno: ${JSON.stringify(ctx)}\nNúmero de refeições: ${data.meals}\nInstruções do coach: ${data.instructions || "nenhuma"}\n\nALIMENTOS:\n${foodText}`;
     const ai = await callGemini<{ meals: { name: string; time?: string; items: { food: number; grams: number; substitutes?: string }[] }[]; kcal_total?: number; notes?: string }>(system, prompt);
     if (!ai.ok) return ai;
