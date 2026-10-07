@@ -95,7 +95,9 @@ export function computeCalories(args: {
   const tdee = args.tmb * args.activityFactor;
   const dir = args.goal === "cut" ? -1 : args.goal === "bulk" ? 1 : 0;
   const adjTraining = (dir * args.adjustPct) / 100;
-  const adjRest = (dir * Math.max(0, args.adjustPct - 5)) / 100;
+  // Dia de descanso sempre recebe 5 p.p. a menos de calorias que o dia de treino
+  // (déficit maior no cut, superávit menor no bulk).
+  const adjRest = adjTraining - 0.05;
   return {
     tmb: args.tmb,
     tdee,
