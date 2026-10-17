@@ -16,11 +16,13 @@ export const PLANS: Plan[] = [
     price: 67,
     originalPrice: 97,
     features: [
-      "Acesso completo ao aplicativo (Modo Foco e Histórico)",
-      "Treinos personalizados atualizados pelo treinador",
-      "Biblioteca completa de exercícios com instruções",
-      "Gamificação: níveis, streak e pontos",
-      "Registro de cargas e volume de treino",
+      "Treinos personalizados para academia e casa",
+      "Modo Foco e Modo Lista, timer de descanso",
+      "Sobrecarga progressiva (veja sua última carga)",
+      "Pontos, streak e metas semanais",
+      "Hidratação e cardio",
+      "BLDNG: peso, medidas e fotos de evolução",
+      "Sem dieta (disponível a partir do Performance)",
     ],
   },
   {
@@ -31,10 +33,9 @@ export const PLANS: Plan[] = [
     highlight: "MAIS POPULAR · LANÇAMENTO",
     features: [
       "Tudo do plano Base",
-      "Prescrição de treinos avançados focados no objetivo",
-      "Acompanhamento de métricas (peso, medidas e gráficos)",
-      "Bônus de disciplina e pontuação extra por precisão",
-      "Canal de mensagens e feedback periódico programado",
+      "Dieta personalizada com macros calculados",
+      "IA de substituições de alimentos 24h",
+      "Feedback periódico programado com o coach",
     ],
   },
   {
@@ -44,8 +45,8 @@ export const PLANS: Plan[] = [
     originalPrice: 397,
     features: [
       "Tudo do plano Performance",
-      "Consultoria totalmente individualizada com ajustes frequentes",
-      "Acompanhamento de fotos de evolução e metas customizadas",
+      "Check-in semanal com ajustes frequentes",
+      "Análise de vídeo da sua execução",
       "Prioridade máxima no atendimento e suporte direto",
     ],
   },
