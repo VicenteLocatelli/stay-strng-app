@@ -64,6 +64,28 @@ type DietPlan = {
 
 function DietPage() {
   const { data: me } = useProfile();
+  const planId = (me?.profile as { plan?: string | null } | null | undefined)?.plan ?? "base";
+  if (me && planId === "base") return <DietLocked />;
+  return <DietContent />;
+}
+
+function DietLocked() {
+  return (
+    <div className="mx-auto max-w-md px-5 py-10">
+      <div className="rounded-2xl border border-gold/40 bg-card p-6 text-center">
+        <Lock className="mx-auto h-8 w-8 text-gold" />
+        <p className="strng-title mt-4 text-lg font-bold">Dieta exclusiva Performance e Elite</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Plano alimentar personalizado, cálculos de macros e a IA de substituições estão
+          disponíveis a partir do plano Performance. Fale com seu treinador para fazer o upgrade.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function DietContent() {
+  const { data: me } = useProfile();
   const qc = useQueryClient();
   const studentId = me?.userId;
   const [feedback, setFeedback] = useState("");

@@ -382,31 +382,8 @@ function TrainPage() {
           <Box label="Volume" value={`${Math.round(summary.volume)} kg`} />
         </div>
 
-        <input
-          ref={photoInput}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void uploadPhoto(f);
-          }}
-        />
         <Button
-          variant="outline"
-          className="mt-6 h-12 w-full border-gold/50 text-gold"
-          disabled={photoSent || uploading}
-          onClick={() => photoInput.current?.click()}
-        >
-          <Camera className="mr-2 h-4 w-4" />
-          {photoSent ? "Foto enviada ✓" : uploading ? "Enviando..." : `Enviar foto pós-treino (+${POINTS.PHOTO})`}
-        </Button>
-        <p className="mt-2 text-center text-[11px] text-muted-foreground">
-          Um envio por sessão. Seu treinador vê a foto e o seu feedback.
-        </p>
-        <Button
-          className="strng-title mt-3 h-12 w-full font-bold"
+          className="strng-title mt-6 h-12 w-full font-bold"
           onClick={() => navigate({ to: "/app" })}
         >
           Voltar para o início
