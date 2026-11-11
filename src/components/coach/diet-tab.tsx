@@ -519,6 +519,18 @@ export function DietTab({ studentId, trainerId }: { studentId: string; trainerId
               </Button>
             </div>
 
+            {calc && (
+              <div className="mt-4 rounded-lg border border-gold/40 bg-background p-3">
+                <p className="text-[10px] font-bold tracking-widest text-gold">ALVO VS. PRESCRITO (DIA DE TREINO)</p>
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <Compare label="Calorias" unit="kcal" target={calc.kcalTraining} actual={dayTotals.kcal} tolerance={50} />
+                  <Compare label="Proteína" unit="g" target={calc.macrosTraining.protein_g} actual={dayTotals.protein} tolerance={5} />
+                  <Compare label="Carbo" unit="g" target={calc.macrosTraining.carbs_g} actual={dayTotals.carbs} tolerance={5} />
+                  <Compare label="Gordura" unit="g" target={calc.macrosTraining.fat_g} actual={dayTotals.fat} tolerance={5} />
+                </div>
+              </div>
+            )}
+
             <ul className="mt-4 space-y-3">
               {meals.map((m) => {
                 const totals = m.diet_meal_items.reduce(
@@ -700,6 +712,22 @@ function Result({ label, value, highlight }: { label: string; value: string; hig
     >
       <p className="strng-title text-lg font-bold">{value}</p>
       <p className="text-[10px] tracking-widest text-muted-foreground">{label.toUpperCase()}</p>
+    </div>
+  );
+}
+
+function Compare({ label, unit, target, actual, tolerance }: { label: string; unit: string; target: number; actual: number; tolerance: number }) {
+  const diff = Math.round(actual - target);
+  const ok = Math.abs(diff) <= tolerance;
+  return (
+    <div className="rounded-md border border-border p-2 text-center">
+      <p className="text-[10px] tracking-widest text-muted-foreground">{label.toUpperCase()}</p>
+      <p className="strng-title text-sm font-bold">
+        {Math.round(actual)} / {Math.round(target)} {unit}
+      </p>
+      <p className={`text-xs font-bold ${ok ? "text-gold" : diff < 0 ? "text-destructive" : "text-primary"}`}>
+        {ok ? "No alvo" : `${diff > 0 ? "+" : ""}${diff} ${unit}`}
+      </p>
     </div>
   );
 }
