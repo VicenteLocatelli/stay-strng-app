@@ -5,9 +5,11 @@ import { SLOGAN } from "@/lib/strng";
 import { PLANS, formatBRL } from "@/lib/plans";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 
 const PIX_KEY = "vicente.locatelli@gmail.com";
-const PIX_CODE = buildPixPayload({ key: PIX_KEY, name: "Vicente Locatelli", city: "Sao Paulo" });
+
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -26,6 +28,15 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const [selectedId, setSelectedId] = useState<string>(PLANS.find((p) => p.highlight)?.id ?? PLANS[0]!.id);
+  const selected = PLANS.find((p) => p.id === selectedId) ?? PLANS[0]!;
+  const PIX_CODE = buildPixPayload({
+    key: PIX_KEY,
+    name: "Vicente Locatelli",
+    city: "Sao Paulo",
+    amount: selected.price,
+    txid: selected.id.toUpperCase(),
+  });
   return (
     <main className="relative min-h-screen overflow-hidden bg-background px-6 py-10">
       <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/15 blur-3xl" />
@@ -109,6 +120,7 @@ function Landing() {
 
               <a
                 href="#pix"
+                onClick={() => setSelectedId(plan.id)}
                 className={`strng-title mt-6 inline-flex h-12 items-center justify-center rounded-md text-sm font-bold transition ${
                   plan.highlight
                     ? "bg-primary text-primary-foreground hover:opacity-90"
@@ -142,6 +154,27 @@ function Landing() {
           >
             Copiar chave PIX
           </Button>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {PLANS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setSelectedId(p.id)}
+                className={`strng-title rounded-full border px-3 py-1 text-xs font-bold ${
+                  p.id === selected.id ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"
+                }`}
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+          <p className="mt-4 text-sm">
+            Plano selecionado: <span className="font-bold text-foreground">{selected.name}</span> ·{" "}
+            <span className="font-bold text-primary">{formatBRL(selected.price)}</span>
+          </p>
+          <div className="mt-4 inline-block rounded-lg bg-foreground p-3">
+            <QRCodeSVG value={PIX_CODE} size={180} bgColor="transparent" fgColor="hsl(var(--background))" />
+          </div>
           <p className="mt-6 text-xs font-bold tracking-widest text-muted-foreground">PIX COPIA E COLA</p>
           <p className="mt-2 break-all rounded-md border border-border bg-background p-3 font-mono text-[11px] text-muted-foreground">
             {PIX_CODE}
