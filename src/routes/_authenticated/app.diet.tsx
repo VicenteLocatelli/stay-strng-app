@@ -185,6 +185,12 @@ function DietContent() {
         </section>
       )}
 
+      {!isLoading && !plan && (
+        <div className="mt-6">
+          <StudentDietAssistant />
+        </div>
+      )}
+
       {plan && targets && (
         <>
           <section className="mt-6 rounded-2xl border border-gold/40 bg-gradient-to-br from-card to-muted p-5">
