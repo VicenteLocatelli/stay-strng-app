@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,10 +20,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   ArrowLeft,
   Check,
-  Camera,
   Timer,
   ListOrdered,
   Trophy,
@@ -64,7 +64,8 @@ function TrainPage() {
   const navigate = useNavigate();
   const { data: me } = useProfile();
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [startedAt] = useState(() => Date.now());
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [current, setCurrent] = useState(0);
   const [mode, setModeState] = useState<"focus" | "list">(() => {
@@ -80,8 +81,6 @@ function TrainPage() {
   const [rest, setRest] = useState<number | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [feedback, setFeedback] = useState("");
-  const [photoSent, setPhotoSent] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [summary, setSummary] = useState<null | {
     points: number;
     perfectOrder: boolean;
@@ -90,7 +89,6 @@ function TrainPage() {
     duration: number;
     sessionId: string;
   }>(null);
-  const photoInput = useRef<HTMLInputElement>(null);
 
   const { data: workout } = useQuery({
     queryKey: ["workout", workoutId],
@@ -148,6 +146,7 @@ function TrainPage() {
   });
 
   useEffect(() => {
+    if (startedAt === null) return;
     const t = setInterval(() => setElapsed(Math.floor((Date.now() - startedAt) / 1000)), 1000);
     return () => clearInterval(t);
   }, [startedAt]);
@@ -163,9 +162,9 @@ function TrainPage() {
     return () => clearTimeout(t);
   }, [rest]);
 
-  // Cria a sessão assim que o treino carrega.
+  // Cria a sessão somente quando o aluno toca em "Iniciar Treino".
   useEffect(() => {
-    if (!me?.userId || !workout || sessionId) return;
+    if (startedAt === null || !me?.userId || !workout || sessionId) return;
     (async () => {
       const { data, error } = await supabase
         .from("workout_sessions")
@@ -180,7 +179,7 @@ function TrainPage() {
       if (error) toast.error("Não foi possível iniciar a sessão.");
       else setSessionId(data.id);
     })();
-  }, [me?.userId, workout, sessionId]);
+  }, [startedAt, me?.userId, workout, sessionId]);
 
   // Garante slots de série para todos os exercícios (modo lista precisa de todos).
   useEffect(() => {
@@ -247,7 +246,7 @@ function TrainPage() {
   async function finishWorkout() {
     if (!sessionId || !me?.userId) return;
     setFinishing(true);
-    const duration = Math.floor((Date.now() - startedAt) / 1000);
+    const duration = Math.floor((Date.now() - (startedAt ?? Date.now())) / 1000);
     const allSets = Object.values(logs).flat().filter((s) => s.done);
     const totalSets = allSets.length;
     const volume = allSets.reduce(
@@ -306,57 +305,6 @@ function TrainPage() {
     }
   }
 
-  async function uploadPhoto(file: File) {
-    if (!summary || !me?.userId || photoSent || uploading) return;
-    setUploading(true);
-
-    // Bloqueio de envio único por sessão (também validado no banco).
-    const { data: existing } = await supabase
-      .from("workout_sessions")
-      .select("photo_bonus_awarded")
-      .eq("id", summary.sessionId)
-      .maybeSingle();
-    if (existing?.photo_bonus_awarded) {
-      setPhotoSent(true);
-      setUploading(false);
-      toast.info("Você já enviou a foto desta sessão.");
-      return;
-    }
-
-    const path = `${me.userId}/${summary.sessionId}.${file.name.split(".").pop() || "jpg"}`;
-    const { error } = await supabase.storage
-      .from("workout-photos")
-      .upload(path, file, { upsert: true });
-    if (error) {
-      setUploading(false);
-      toast.error("Não foi possível enviar a foto.");
-      return;
-    }
-    await supabase.from("workout_completion_photos").insert({
-      session_id: summary.sessionId,
-      student_id: me.userId,
-      storage_path: path,
-    });
-    await supabase.from("points_transactions").insert({
-      student_id: me.userId,
-      session_id: summary.sessionId,
-      reason: "completion_photo",
-      points: POINTS.PHOTO,
-    });
-    await supabase
-      .from("workout_sessions")
-      .update({ points_awarded: summary.points + POINTS.PHOTO, photo_bonus_awarded: true })
-      .eq("id", summary.sessionId);
-    setSummary({ ...summary, points: summary.points + POINTS.PHOTO });
-    setPhotoSent(true);
-    setUploading(false);
-    toast.success(`Foto enviada! +${POINTS.PHOTO} STRNG points`);
-    const newBadges = await awardConsistencyBadges(me.userId).catch(() => [] as string[]);
-    for (const name of newBadges) {
-      toast.success(`Conquista desbloqueada: ${name}!`, { duration: 6000 });
-    }
-  }
-
   if (summary) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-5 py-10">
@@ -396,12 +344,52 @@ function TrainPage() {
     return <main className="p-6 text-sm text-muted-foreground">Carregando treino...</main>;
   }
 
+  if (startedAt === null) {
+    return (
+      <main className="mx-auto w-full max-w-lg px-5 pt-6 pb-32">
+        <button
+          onClick={() => navigate({ to: "/app" })}
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </button>
+        <p className="mt-4 text-xs tracking-[0.3em] text-muted-foreground">PRÉVIA DO TREINO</p>
+        <h1 className="mt-1 text-2xl font-bold">{workout.name}</h1>
+        {workout.objective && <p className="mt-1 text-sm text-muted-foreground">{workout.objective}</p>}
+        <ul className="mt-5 space-y-2">
+          {exercises.map((we, i) => (
+            <li key={we.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-3">
+              <span className="text-sm">
+                <span className="strng-title mr-2 font-bold text-muted-foreground">{i + 1}</span>
+                {we.exercises?.name}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {we.sets} × {we.rep_range}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/95 p-4">
+          <Button className="strng-title mx-auto flex h-12 w-full max-w-lg font-bold" onClick={() => setStartedAt(Date.now())}>
+            <PlayCircle className="mr-2 h-5 w-5" /> Iniciar Treino
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
   const active = exercises[Math.min(current, exercises.length - 1)]!;
   const doneCount = Object.values(logs).flat().filter((s) => s.done).length;
   const totalPrescribed = exercises.reduce((s, e) => s + e.sets, 0);
 
   return (
     <main className="mx-auto w-full max-w-lg px-5 pt-6 pb-40">
+      <Dialog open={!!videoUrl} onOpenChange={(o) => !o && setVideoUrl(null)}>
+        <DialogContent className="max-w-lg p-3">
+          <DialogTitle className="sr-only">Vídeo de demonstração</DialogTitle>
+          {videoUrl && <VideoPlayer url={videoUrl} />}
+        </DialogContent>
+      </Dialog>
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <button className="inline-flex items-center gap-1 text-xs text-muted-foreground">
@@ -466,6 +454,7 @@ function TrainPage() {
           last={lastLoads?.[active.exercise_id]}
           onPatch={(i, p) => patchSet(active.id, i, p)}
           onConfirm={(i) => confirmSet(active, i, current)}
+          onVideo={setVideoUrl}
         />
       ) : (
         <div className="space-y-4">
@@ -478,6 +467,7 @@ function TrainPage() {
               showMedia
               last={lastLoads?.[we.exercise_id]}
               onPatch={(i, p) => patchSet(we.id, i, p)}
+              onVideo={setVideoUrl}
               onConfirm={(i) => confirmSet(we, i, idx)}
             />
           ))}
@@ -564,7 +554,9 @@ function ExerciseCard({
   last,
   onPatch,
   onConfirm,
+  onVideo,
 }: {
+  onVideo?: (url: string) => void;
   we: WeRow;
   sets: SetLog[];
   index?: number;
@@ -593,14 +585,13 @@ function ExerciseCard({
         />
       )}
       {showMedia && we.exercises?.video_url && (
-        <a
-          href={we.exercises.video_url}
-          target="_blank"
-          rel="noreferrer"
+        <button
+          type="button"
+          onClick={() => onVideo?.(we.exercises!.video_url!)}
           className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary underline"
         >
           <PlayCircle className="h-4 w-4" /> Ver vídeo de demonstração
-        </a>
+        </button>
       )}
 
       <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -718,4 +709,28 @@ function Box({ label, value }: { label: string; value: string }) {
       <p className="text-[10px] tracking-widest text-muted-foreground">{label.toUpperCase()}</p>
     </div>
   );
+}
+
+function youtubeId(url: string) {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{6,})/);
+  return m?.[1] ?? null;
+}
+
+function VideoPlayer({ url }: { url: string }) {
+  const yt = youtubeId(url);
+  const isShort = url.includes("/shorts/");
+  if (yt) {
+    return (
+      <div className={`mx-auto w-full overflow-hidden rounded-lg ${isShort ? "aspect-[9/16] max-h-[75vh] max-w-[340px]" : "aspect-video"}`}>
+        <iframe
+          className="h-full w-full"
+          src={`https://www.youtube.com/embed/${yt}?autoplay=1&playsinline=1&rel=0`}
+          title="Vídeo de demonstração"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+  return <video src={url} controls autoPlay playsInline className="max-h-[75vh] w-full rounded-lg" />;
 }
