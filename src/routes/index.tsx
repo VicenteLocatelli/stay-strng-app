@@ -173,7 +173,7 @@ function Landing() {
             <span className="font-bold text-primary">{formatBRL(selected.price)}</span>
           </p>
           <div className="mt-4 inline-block rounded-lg bg-foreground p-3">
-            <QRCodeSVG value={PIX_CODE} size={180} bgColor="transparent" fgColor="hsl(var(--background))" />
+            <QRCodeSVG value={PIX_CODE} size={180} bgColor="transparent" fgColor="var(--background)" />
           </div>
           <p className="mt-6 text-xs font-bold tracking-widest text-muted-foreground">PIX COPIA E COLA</p>
           <p className="mt-2 break-all rounded-md border border-border bg-background p-3 font-mono text-[11px] text-muted-foreground">
