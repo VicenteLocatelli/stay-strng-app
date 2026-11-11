@@ -34,7 +34,7 @@ function CoachDashboard() {
         .eq("active", true);
 
       const ids = (links ?? []).map((l) => l.student_id);
-      const [profilesRes, sessionsRes, pointsRes, activeRes] = await Promise.all([
+      const [profilesRes, sessionsRes, pointsRes] = await Promise.all([
         ids.length
           ? supabase.from("profiles").select("id,full_name,weekly_target,plan,plan_price").in("id", ids)
           : Promise.resolve({ data: [] as { id: string; full_name: string; weekly_target: number; plan: string; plan_price: number }[] }),
@@ -49,15 +49,6 @@ function CoachDashboard() {
         ids.length
           ? supabase.from("points_transactions").select("student_id,points,created_at").in("student_id", ids)
           : Promise.resolve({ data: [] as { student_id: string; points: number; created_at: string }[] }),
-        ids.length
-          ? supabase
-              .from("workout_sessions")
-              .select("id,student_id,workout_name,started_at")
-              .in("student_id", ids)
-              .eq("status", "in_progress")
-              .gte("started_at", new Date(Date.now() - 2 * 3600_000).toISOString())
-              .order("started_at", { ascending: false })
-          : Promise.resolve({ data: [] as { id: string; student_id: string; workout_name: string; started_at: string }[] }),
       ]);
 
       return {
@@ -65,7 +56,6 @@ function CoachDashboard() {
         profiles: profilesRes.data ?? [],
         sessions: sessionsRes.data ?? [],
         points: pointsRes.data ?? [],
-        active: activeRes.data ?? [],
       };
     },
     refetchInterval: 60_000,
@@ -129,7 +119,6 @@ function CoachDashboard() {
 
   const nameOf = (id: string) =>
     (data?.profiles ?? []).find((p) => p.id === id)?.full_name || "Aluno";
-  const trainingNow = data?.active ?? [];
   const todayKey = new Date().toDateString();
   const trainedToday = (data?.sessions ?? []).filter(
     (s) => s.completed_at && new Date(s.completed_at).toDateString() === todayKey,
@@ -160,17 +149,7 @@ function CoachDashboard() {
       <CoachFoodApprovalAlerts />
       <DietFeedbackAlerts />
 
-      <section className="mt-6 grid gap-3 sm:grid-cols-2">
-        <LiveCard
-          title="TREINANDO AGORA"
-          accent="primary"
-          empty="Ninguém treinando neste momento."
-          items={trainingNow.map((s) => ({
-            id: s.student_id,
-            name: nameOf(s.student_id),
-            detail: `${s.workout_name} · desde ${new Date(s.started_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
-          }))}
-        />
+      <section className="mt-6 grid gap-3">
         <LiveCard
           title="TREINARAM HOJE"
           accent="gold"

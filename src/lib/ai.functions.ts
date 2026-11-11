@@ -196,6 +196,10 @@ export const aiAskSubstitution = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ question: z.string().min(3).max(500) }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const { data: prof } = await supabase.from("profiles").select("plan").eq("id", userId).maybeSingle();
+    if (!prof?.plan || prof.plan === "base") {
+      return { ok: false as const, error: "O assistente de dieta é exclusivo dos planos Performance e Elite." };
+    }
     const { data: plans } = await supabase
       .from("diet_plans")
       .select("goal,kcal_training,diet_meals(name,diet_meal_items(quantity_g,custom_name,foods(name,portion_g,kcal,protein_animal_g,protein_veg_g,carbs_g,fat_g)))")

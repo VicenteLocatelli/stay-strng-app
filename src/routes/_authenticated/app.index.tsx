@@ -40,7 +40,7 @@ function StudentHome() {
     queryKey: ["student-home", studentId],
     enabled: !!studentId,
     queryFn: async () => {
-      const [workouts, sessions, points, measures, unreadFeedback] = await Promise.all([
+      const [workouts, sessions, points, measures, dietPlan, unreadFeedback] = await Promise.all([
         supabase
           .from("student_workouts")
           .select("id,name,objective,estimated_minutes,update_notice_at,workout_exercises(id,exercises(is_cardio))")
@@ -62,6 +62,13 @@ function StudentHome() {
           .order("measured_on", { ascending: false })
           .limit(1),
         supabase
+          .from("diet_plans")
+          .select("kcal_training")
+          .eq("student_id", studentId!)
+          .eq("status", "published")
+          .order("published_at", { ascending: false })
+          .limit(1),
+        supabase
           .from("student_feedbacks")
           .select("id,content,created_at")
           .eq("student_id", studentId!)
@@ -75,6 +82,7 @@ function StudentHome() {
         totalPoints: (points.data ?? []).reduce((s, p) => s + (p.points ?? 0), 0),
         weightKg: measures.data?.[0]?.weight_kg ? Number(measures.data[0].weight_kg) : null,
         unreadFeedback: unreadFeedback.data?.[0] ?? null,
+        dietKcal: dietPlan.data?.[0] ? Number(dietPlan.data[0].kcal_training ?? 0) : null,
       };
     },
   });
@@ -214,7 +222,13 @@ function StudentHome() {
         <QuickCard
           icon={<UtensilsCrossed className="h-5 w-5 text-gold" />}
           title="Dieta"
-          subtitle="Em breve · liberado pelo Coach"
+          subtitle={
+            me?.profile?.plan === "base"
+              ? "Exclusivo Performance / Elite"
+              : data?.dietKcal != null
+                ? `${Math.round(data.dietKcal).toLocaleString("pt-BR")} kcal · Plano ativo`
+                : "Aguardando prescrição do Coach"
+          }
           to="/app/diet"
         />
 
